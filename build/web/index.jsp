@@ -1,17 +1,22 @@
-<%-- 
-    Document   : index
-    Created on : Feb 26, 2026, 7:12:39 AM
-    Author     : PC
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%
+    model.UserDTO user =
+        (model.UserDTO) session.getAttribute("LOGIN_USER");
+
+    if (user != null) {
+        response.sendRedirect("home.jsp");
+        return;
+    }
+%>
+
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>JSP Page</title>
-    </head>
-    <body>
-        <a href="login.jsp">Login</a>
-    </body>
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+</head>
+<body>
+    <h2>Welcome to Book Store</h2>
+    <a href="login.jsp">Login</a>
+</body>
 </html>

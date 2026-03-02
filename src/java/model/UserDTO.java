@@ -1,6 +1,5 @@
 package model;
 
-import java.util.Date;
 import javax.persistence.*;
 
 @Entity
@@ -8,8 +7,8 @@ import javax.persistence.*;
 public class UserDTO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @Column(name = "user_id")
+    private int id;
 
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
@@ -17,40 +16,31 @@ public class UserDTO {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(nullable = false, length = 255)
-    private String password;
+    @Column(name = "password_hash", nullable = false, length = 255)
+    private String passwordHash;
 
     @Column(length = 20)
     private String phone;
 
-    @Column(columnDefinition = "NVARCHAR(MAX)")
-    private String address;
-
-    @Column(length = 20)
-    private String role;
+    @Column(name = "role_id", nullable = false)
+    private Integer roleId;
 
     @Column(length = 20)
     private String status;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at")
-    private Date createdAt;
-
     public UserDTO() {
     }
 
-    public UserDTO(Integer id, String fullName, String email, String password,
-                   String phone, String address, String role,
-                   String status, Date createdAt) {
+    public UserDTO(Integer id, String fullName, String email,
+                   String passwordHash, String phone,
+                   Integer roleId, String status) {
         this.id = id;
         this.fullName = fullName;
         this.email = email;
-        this.password = password;
+        this.passwordHash = passwordHash;
         this.phone = phone;
-        this.address = address;
-        this.role = role;
+        this.roleId = roleId;
         this.status = status;
-        this.createdAt = createdAt;
     }
 
     // ===== Getter & Setter =====
@@ -64,36 +54,27 @@ public class UserDTO {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
 
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
-
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public Integer getRoleId() { return roleId; }
+    public void setRoleId(Integer roleId) { this.roleId = roleId; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    public Date getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
-
     @Override
     public String toString() {
-        return "UserDTO{"
-                + "userID=" + id
-                + ", fullName=" + fullName
-                + ", email=" + email
-                + ", password=" + password
-                + ", phone=" + phone
-                + ", address=" + address
-                + ", role=" + role
-                + ", status=" + status
-                + ", createAt=" + createdAt
-                + "}";
+        return "UserDTO{" +
+                "id=" + id +
+                ", fullName='" + fullName + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", roleId=" + roleId +
+                ", status='" + status + '\'' +
+                '}';
     }
 }
