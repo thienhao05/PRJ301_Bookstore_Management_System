@@ -144,3 +144,16 @@ BookstoreProject/
 │       │
 │       └── index.jsp                      # Điểm vào duy nhất (Chuyển hướng thẳng tới MainController)
 ```
+
+> [!NOTE]
+> Hệ thống quản lý hiệu sách - Demo version
+
+**Member distribution**
+
+
+ID          | Name                   | Assign tasks
+------------|------------------------|--------------
+SE193682    | Phung Nguyen Thien Hao | 
+SE193912    | Do Quoc Huy            |
+SE193917    | Le Hien                | 
+SE193917    | Nguyen Le Nhat Vinh    | 
