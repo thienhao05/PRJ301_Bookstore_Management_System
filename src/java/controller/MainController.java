@@ -20,9 +20,8 @@ public class MainController extends HttpServlet {
             String email = request.getParameter("txtEmail");
             String password = request.getParameter("txtPassword");
 
-            // Validate cơ bản
-            if (email == null || password == null || 
-                email.trim().isEmpty() || password.trim().isEmpty()) {
+            if (email == null || password == null
+                    || email.trim().isEmpty() || password.trim().isEmpty()) {
 
                 request.setAttribute("ERROR", "Email and Password are required!");
                 request.getRequestDispatcher("login.jsp").forward(request, response);
@@ -30,10 +29,6 @@ public class MainController extends HttpServlet {
             }
 
             UserDAO dao = new UserDAO();
-
-            // ⚠ Nếu bạn hash password thì phải hash ở đây trước khi login
-            // String hashed = hashFunction(password);
-
             UserDTO user = dao.login(email.trim(), password.trim());
 
             if (user != null) {
@@ -48,6 +43,16 @@ public class MainController extends HttpServlet {
                 request.setAttribute("ERROR", "Invalid email or password!");
                 request.getRequestDispatcher("login.jsp").forward(request, response);
             }
+
+        } else if ("Logout".equals(action)) {
+
+            HttpSession session = request.getSession(false);
+
+            if (session != null) {
+                session.invalidate();
+            }
+
+            response.sendRedirect("login.jsp");
         }
     }
 

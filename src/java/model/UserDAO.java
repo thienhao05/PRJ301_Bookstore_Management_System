@@ -1,30 +1,45 @@
 package model;
 
-import javax.persistence.EntityManager;
-import utils.JPAUtil;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import utils.DbUtils;
 
 public class UserDAO {
 
-    public UserDTO login(String email, String passwordHash) {
+    public UserDTO login(String email, String password) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        String sql = "SELECT * FROM Users WHERE email = ? AND password_hash = ? AND status = 'active'";
 
         try {
-            String jpql = "SELECT u FROM UserDTO u "
-                    + "WHERE u.email = :email "
-                    + "AND u.passwordHash = :passwordHash "
-                    + "AND u.status = :status";
 
-            return em.createQuery(jpql, UserDTO.class)
-                    .setParameter("email", email)
-                    .setParameter("passwordHash", passwordHash)
-                    .setParameter("status", "ACTIVE")
-                    .getResultStream()
-                    .findFirst()
-                    .orElse(null);
+            Connection conn = DbUtils.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
 
-        } finally {
-            em.close();
+            ps.setString(1, email);
+            ps.setString(2, password);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+
+                UserDTO user = new UserDTO();
+
+                user.setId(rs.getInt("user_id"));
+                user.setFullName(rs.getString("full_name"));
+                user.setEmail(rs.getString("email"));
+                user.setPasswordHash(rs.getString("password_hash"));
+                user.setPhone(rs.getString("phone"));
+                user.setRoleId(rs.getInt("role_id"));
+                user.setStatus(rs.getString("status"));
+
+                return user;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
+        return null;
     }
 }
