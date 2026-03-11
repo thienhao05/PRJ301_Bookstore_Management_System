@@ -1,11 +1,11 @@
 package controller;
 
 import java.io.IOException;
-import javax.servlet.*;
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.*;
-import model.UserDAO;
-import model.UserDTO;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "MainController", urlPatterns = {"/MainController"})
 public class MainController extends HttpServlet {
@@ -13,46 +13,28 @@ public class MainController extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        response.setContentType("text/html;charset=UTF-8");
+        // Lấy action từ form (ví dụ: action=Login, action=Logout)
         String action = request.getParameter("action");
+        String url = "login.jsp"; // Mặc định nếu không có action thì đá về trang login
 
-        if ("Login".equals(action)) {
-
-            String email = request.getParameter("txtEmail");
-            String password = request.getParameter("txtPassword");
-
-            if (email == null || password == null
-                    || email.trim().isEmpty() || password.trim().isEmpty()) {
-
-                request.setAttribute("ERROR", "Email and Password are required!");
-                request.getRequestDispatcher("login.jsp").forward(request, response);
-                return;
+        try {
+            if (action == null) {
+                url = "login.jsp";
+            } // Nếu action thuộc nhóm User -> Chuyển trạm sang UserController
+            else if (action.equals("Login") || action.equals("Logout") || action.equals("Register")) {
+                url = "UserController";
             }
+            // Sau này ông có thêm Book thì làm như sau:
+            // else if (action.equals("SearchBook") || action.equals("ViewBook")) {
+            //     url = "BookController";
+            // }
 
-            UserDAO dao = new UserDAO();
-            UserDTO user = dao.login(email.trim(), password.trim());
-
-            if (user != null) {
-
-                HttpSession session = request.getSession();
-                session.setAttribute("LOGIN_USER", user);
-
-                response.sendRedirect("home.jsp");
-
-            } else {
-
-                request.setAttribute("ERROR", "Invalid email or password!");
-                request.getRequestDispatcher("login.jsp").forward(request, response);
-            }
-
-        } else if ("Logout".equals(action)) {
-
-            HttpSession session = request.getSession(false);
-
-            if (session != null) {
-                session.invalidate();
-            }
-
-            response.sendRedirect("login.jsp");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // Chuyển tiếp (forward) request và response sang đúng Controller tương ứng
+            request.getRequestDispatcher(url).forward(request, response);
         }
     }
 

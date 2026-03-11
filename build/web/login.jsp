@@ -1,9 +1,8 @@
+<%@page import="dto.UserDTO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
-    model.UserDTO user
-            = (model.UserDTO) session.getAttribute("LOGIN_USER");
-
+    UserDTO user = (UserDTO) session.getAttribute("LOGIN_USER");
     if (user != null) {
         response.sendRedirect("home.jsp");
         return;
@@ -16,35 +15,22 @@
         <meta charset="UTF-8">
         <title>Login</title>
     </head>
-
     <body>
-
         <h2>Login</h2>
 
         <form action="MainController" method="post">
-
             Email:
             <input type="text" name="txtEmail" required />
             <br/>
-
             Password:
             <input type="password" name="txtPassword" required />
             <br/>
-
+            <!-- Action truyền về MainController -->
             <input type="submit" name="action" value="Login"/>
-
         </form>
 
-        <%
-            String error = (String) request.getAttribute("ERROR");
-            if (error != null) {
-        %>
-
-        <p style="color:red;"><%= error%></p>
-
-        <%
-            }
-        %>
+        <!-- Dùng EL để in lỗi nếu có -->
+        <p style="color:red;">${requestScope.ERROR}</p>
 
     </body>
 </html>
