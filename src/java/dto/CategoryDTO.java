@@ -5,21 +5,18 @@ public class CategoryDTO {
     private int id;
     private String name;
     private String description;
-    private String status;
+    private int status;
 
-    // 1. Constructor không tham số (Bắt buộc phải có để JSP/Servlet khởi tạo rỗng)
     public CategoryDTO() {
     }
 
-    // 2. Constructor đầy đủ tham số
-    public CategoryDTO(int id, String name, String description, String status) {
+    public CategoryDTO(int id, String name, String description, int status) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.status = status;
     }
 
-    // 3. Generate toàn bộ Getter và Setter (Alt + Insert trong NetBeans/IntelliJ)
     public int getId() {
         return id;
     }
@@ -44,17 +41,11 @@ public class CategoryDTO {
         this.description = description;
     }
 
-    public String getStatus() {
+    public int getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(int status) {
         this.status = status;
-    }
-
-    // 4. Hàm toString() để debug in ra console cho dễ nhìn
-    @Override
-    public String toString() {
-        return "CategoryDTO{" + "id=" + id + ", name=" + name + ", status=" + status + '}';
     }
 }

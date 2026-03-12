@@ -1,32 +1,26 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package dto;
 
 public class PublisherDTO {
 
-    private int publisher_id;
+    private int id;
     private String name;
-    private String address;
-    private String phone;
+    private String description;
 
     public PublisherDTO() {
     }
 
-    public PublisherDTO(int publisher_id, String name, String address, String phone) {
-        this.publisher_id = publisher_id;
+    public PublisherDTO(int id, String name, String description) {
+        this.id = id;
         this.name = name;
-        this.address = address;
-        this.phone = phone;
+        this.description = description;
     }
 
-    public int getPublisher_id() {
-        return publisher_id;
+    public int getId() {
+        return id;
     }
 
-    public void setPublisher_id(int publisher_id) {
-        this.publisher_id = publisher_id;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -37,20 +31,11 @@ public class PublisherDTO {
         this.name = name;
     }
 
-    public String getAddress() {
-        return address;
+    public String getDescription() {
+        return description;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setDescription(String description) {
+        this.description = description;
     }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-    
 }
