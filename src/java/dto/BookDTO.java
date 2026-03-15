@@ -3,7 +3,7 @@ package dto;
 import java.sql.Timestamp; // Dùng để hứng cột DATETIME
 
 public class BookDTO {
-    
+
     private int bookId;
     private String title;
     private String author;
@@ -30,27 +30,67 @@ public class BookDTO {
     }
 
     // Getter và Setter
-    public int getBookId() { return bookId; }
-    public void setBookId(int bookId) { this.bookId = bookId; }
+    public int getBookId() {
+        return bookId;
+    }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public void setBookId(int bookId) {
+        this.bookId = bookId;
+    }
 
-    public String getAuthor() { return author; }
-    public void setAuthor(String author) { this.author = author; }
+    public String getTitle() {
+        return title;
+    }
 
-    public double getPrice() { return price; }
-    public void setPrice(double price) { this.price = price; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-    public int getStock() { return stock; }
-    public void setStock(int stock) { this.stock = stock; }
+    public String getAuthor() {
+        return author;
+    }
 
-    public int getCategoryId() { return categoryId; }
-    public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
+    public void setAuthor(String author) {
+        this.author = author;
+    }
 
-    public int getPublisherId() { return publisherId; }
-    public void setPublisherId(int publisherId) { this.publisherId = publisherId; }
+    public double getPrice() {
+        return price;
+    }
 
-    public Timestamp getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public int getStock() {
+        return stock;
+    }
+
+    public void setStock(int stock) {
+        this.stock = stock;
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public int getPublisherId() {
+        return publisherId;
+    }
+
+    public void setPublisherId(int publisherId) {
+        this.publisherId = publisherId;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
 }

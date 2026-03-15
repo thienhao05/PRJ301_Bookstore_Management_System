@@ -26,6 +26,10 @@ public class ShiftDTO {
         this.end_time = end_time;
     }
 
+    public ShiftDTO(int id, int staffId, String startTime, String endTime, Date valueOf) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
     public int getShift_id() {
         return shift_id;
     }
