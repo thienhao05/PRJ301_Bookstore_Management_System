@@ -2,149 +2,185 @@ package dao;
 
 import dto.UserDTO;
 import utils.DbUtils;
-import java.sql.*;
-import java.util.*;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserDAO implements ICRUD<UserDTO> {
 
-    // LOGIN
-    public UserDTO login(String username, String password) {
-        // Map username vào cột email, password vào password_hash và status so sánh với chữ 'Active'
-        String sql = "SELECT * FROM Users WHERE email=? AND password_hash=? AND status='Active'";
+    // ==============================================================
+    // CÁC CÂU LỆNH SQL
+    // ==============================================================
+    private static final String INSERT_USER = "INSERT INTO Users (full_name, email, password_hash, role_id, status) VALUES (?, ?, ?, ?, ?)";
+    private static final String SELECT_ALL_USERS = "SELECT * FROM Users";
+    private static final String SELECT_USER_BY_ID = "SELECT * FROM Users WHERE user_id = ?";
+    private static final String UPDATE_USER = "UPDATE Users SET full_name = ?, email = ?, password_hash = ?, role_id = ?, status = ? WHERE user_id = ?";
+    private static final String DELETE_USER = "DELETE FROM Users WHERE user_id = ?";
+    
+    // ==============================================================
+    // CUSTOM SQL 
+    // ==============================================================
+    private static final String CHECK_LOGIN = "SELECT * FROM Users WHERE email = ? AND password_hash = ? AND status = 'Active'";
+    private static final String CHECK_EMAIL = "SELECT 1 FROM Users WHERE email = ?";
+    // Câu lệnh SQL mới để tìm User bằng Email
+    private static final String SELECT_USER_BY_EMAIL = "SELECT * FROM Users WHERE email = ?";
 
-        try ( Connection con = DbUtils.getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setString(1, username);
-            ps.setString(2, password);
-
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                return new UserDTO(
-                        rs.getInt("user_id"), // Tên cột trong DB
-                        rs.getString("full_name"), // Tên cột trong DB (đẩy vào biến username của DTO)
-                        rs.getString("password_hash"),// Tên cột trong DB
-                        rs.getString("email"),
-                        rs.getInt("role_id"), // Tên cột trong DB
-                        "Active".equalsIgnoreCase(rs.getString("status")) // Chuyển chữ 'Active' thành boolean true
-                );
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    // CREATE
     @Override
     public boolean create(UserDTO obj) {
-        String sql = "INSERT INTO Users(full_name, password_hash, email, role_id, status) VALUES(?,?,?,?,?)";
-
-        try ( Connection con = DbUtils.getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setString(1, obj.getUsername()); // Lấy tên DTO gán vào full_name
-            ps.setString(2, obj.getPassword()); // Lấy pass DTO gán vào password_hash
-            ps.setString(3, obj.getEmail());
-            ps.setInt(4, obj.getRoleId());
-            ps.setString(5, obj.isStatus() ? "Active" : "Inactive"); // Chuyển true/false thành chữ
-
-            return ps.executeUpdate() > 0;
-
-        } catch (Exception e) {
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement pstm = conn.prepareStatement(INSERT_USER)) {
+            
+            pstm.setString(1, obj.getUsername()); 
+            pstm.setString(2, obj.getEmail());
+            pstm.setString(3, obj.getPassword()); 
+            pstm.setInt(4, obj.getRoleId());
+            pstm.setString(5, obj.isStatus() ? "Active" : "Inactive"); 
+            
+            return pstm.executeUpdate() > 0;
+        } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         return false;
     }
 
-    // READ BY ID
-    @Override
-    public UserDTO read(int id) {
-        String sql = "SELECT * FROM Users WHERE user_id=?";
-
-        try ( Connection con = DbUtils.getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                return new UserDTO(
-                        rs.getInt("user_id"),
-                        rs.getString("full_name"),
-                        rs.getString("password_hash"),
-                        rs.getString("email"),
-                        rs.getInt("role_id"),
-                        "Active".equalsIgnoreCase(rs.getString("status"))
-                );
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    // READ ALL
     @Override
     public List<UserDTO> readAll() {
         List<UserDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM Users";
-
-        try ( Connection con = DbUtils.getConnection();  PreparedStatement ps = con.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
-
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement pstm = conn.prepareStatement(SELECT_ALL_USERS);
+             ResultSet rs = pstm.executeQuery()) {
+             
             while (rs.next()) {
-                UserDTO user = new UserDTO(
-                        rs.getInt("user_id"),
-                        rs.getString("full_name"),
-                        rs.getString("password_hash"),
-                        rs.getString("email"),
-                        rs.getInt("role_id"),
-                        "Active".equalsIgnoreCase(rs.getString("status"))
-                );
-                list.add(user);
+                list.add(mapResultSetToDTO(rs));
             }
-
-        } catch (Exception e) {
+        } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         return list;
     }
 
-    // UPDATE
+    @Override
+    public UserDTO readById(int id) {
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement pstm = conn.prepareStatement(SELECT_USER_BY_ID)) {
+             
+            pstm.setInt(1, id);
+            try (ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToDTO(rs);
+                }
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @Override
     public boolean update(UserDTO obj) {
-        String sql = "UPDATE Users SET full_name=?, password_hash=?, email=?, role_id=?, status=? WHERE user_id=?";
-
-        try ( Connection con = DbUtils.getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setString(1, obj.getUsername());
-            ps.setString(2, obj.getPassword());
-            ps.setString(3, obj.getEmail());
-            ps.setInt(4, obj.getRoleId());
-            ps.setString(5, obj.isStatus() ? "Active" : "Inactive");
-            ps.setInt(6, obj.getUserId()); // Khóa chính để update
-
-            return ps.executeUpdate() > 0;
-
-        } catch (Exception e) {
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement pstm = conn.prepareStatement(UPDATE_USER)) {
+             
+            pstm.setString(1, obj.getUsername());
+            pstm.setString(2, obj.getEmail());
+            pstm.setString(3, obj.getPassword());
+            pstm.setInt(4, obj.getRoleId());
+            pstm.setString(5, obj.isStatus() ? "Active" : "Inactive");
+            pstm.setInt(6, obj.getUserId());
+            
+            return pstm.executeUpdate() > 0;
+        } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         return false;
     }
 
-    // DELETE
     @Override
     public boolean delete(int id) {
-        String sql = "DELETE FROM Users WHERE user_id=?";
-
-        try ( Connection con = DbUtils.getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setInt(1, id);
-            return ps.executeUpdate() > 0;
-
-        } catch (Exception e) {
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement pstm = conn.prepareStatement(DELETE_USER)) {
+             
+            pstm.setInt(1, id);
+            return pstm.executeUpdate() > 0;
+        } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         return false;
+    }
+
+    // ==============================================================
+    // CÁC HÀM NGHIỆP VỤ (CUSTOM METHODS)
+    // ==============================================================
+
+    public UserDTO login(String email, String password) {
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement pstm = conn.prepareStatement(CHECK_LOGIN)) {
+             
+            pstm.setString(1, email);
+            pstm.setString(2, password);
+            try (ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToDTO(rs);
+                }
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean checkEmailExist(String email) {
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement pstm = conn.prepareStatement(CHECK_EMAIL)) {
+             
+            pstm.setString(1, email);
+            try (ResultSet rs = pstm.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Lấy thông tin User đầy đủ thông qua Email
+     */
+    public UserDTO getUserByEmail(String email) {
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement pstm = conn.prepareStatement(SELECT_USER_BY_EMAIL)) {
+            
+            pstm.setString(1, email);
+            try (ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToDTO(rs);
+                }
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // ==============================================================
+    // HÀM MAPPER (SQL -> DTO)
+    // ==============================================================
+    private UserDTO mapResultSetToDTO(ResultSet rs) throws SQLException {
+        UserDTO dto = new UserDTO();
+        dto.setUserId(rs.getInt("user_id"));
+        
+        dto.setUsername(rs.getString("full_name"));
+        dto.setEmail(rs.getString("email"));
+        dto.setPassword(rs.getString("password_hash"));
+        dto.setRoleId(rs.getInt("role_id"));
+        
+        String statusStr = rs.getString("status");
+        dto.setStatus(statusStr != null && statusStr.equalsIgnoreCase("Active"));
+        
+        return dto;
     }
 }

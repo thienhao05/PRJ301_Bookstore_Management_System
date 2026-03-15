@@ -1,85 +1,110 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controller;
 
+import dao.BookDAO;
+import dao.CartItemDAO;
+import dto.CartItemDTO;
+import dto.UserDTO;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.List;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-/**
- *
- * @author PC
- */
+@WebServlet(name = "CartController", urlPatterns = {"/CartController"})
 public class CartController extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        try ( PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet CartController</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet CartController at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
+        
+        String action = request.getParameter("action");
+        CartItemDAO itemDao = new CartItemDAO();
+        BookDAO bookDao = new BookDAO();
+        HttpSession session = request.getSession();
+
+        // 1. KIỂM TRA ĐĂNG NHẬP
+        UserDTO user = (UserDTO) session.getAttribute("LOGIN_USER");
+        if (user == null) {
+            session.setAttribute("MSG_ERROR", "Vui lòng đăng nhập để mua hàng!");
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        try {
+            // Giả sử CART_ID được lưu vào session khi User đăng nhập thành công
+            int cartId = (int) session.getAttribute("CART_ID");
+
+            if (action == null || action.equals("view")) {
+                // 2. XEM GIỎ HÀNG
+                List<CartItemDTO> cartItems = itemDao.getItemsByCartId(cartId);
+                request.setAttribute("CART_ITEMS", cartItems);
+                request.getRequestDispatcher("cart.jsp").forward(request, response);
+
+            } else if (action.equals("add")) {
+                // 3. THÊM SÁCH VÀO GIỎ
+                int bookId = Integer.parseInt(request.getParameter("bookId"));
+                int quantity = 1; // Mặc định mỗi lần nhấn là thêm 1
+                if (request.getParameter("quantity") != null) {
+                    quantity = Integer.parseInt(request.getParameter("quantity"));
+                }
+
+                // Kiểm tra xem sách đã có trong giỏ chưa
+                CartItemDTO existingItem = itemDao.getItem(cartId, bookId);
+                if (existingItem != null) {
+                    // Nếu có rồi thì tăng số lượng
+                    existingItem.setQuantity(existingItem.getQuantity() + quantity);
+                    itemDao.update(existingItem);
+                } else {
+                    // Nếu chưa có thì tạo mới
+                    CartItemDTO newItem = new CartItemDTO(0, cartId, bookId, quantity);
+                    itemDao.create(newItem);
+                }
+                
+                session.setAttribute("MSG_SUCCESS", "Đã thêm vào giỏ hàng!");
+                String url = request.getHeader("referer");
+                response.sendRedirect(url != null ? url : "BookController?action=view");
+
+            } else if (action.equals("update")) {
+                // 4. CẬP NHẬT SỐ LƯỢNG (Dành cho trang Cart)
+                int itemId = Integer.parseInt(request.getParameter("itemId"));
+                int newQty = Integer.parseInt(request.getParameter("quantity"));
+                
+                if (newQty > 0) {
+                    CartItemDTO item = itemDao.readById(itemId);
+                    if (item != null) {
+                        item.setQuantity(newQty);
+                        itemDao.update(item);
+                    }
+                } else {
+                    itemDao.delete(itemId); // Nếu qty = 0 thì xóa luôn
+                }
+                response.sendRedirect("CartController?action=view");
+
+            } else if (action.equals("remove")) {
+                // 5. XÓA KHỎI GIỎ
+                int itemId = Integer.parseInt(request.getParameter("itemId"));
+                itemDao.delete(itemId);
+                response.sendRedirect("CartController?action=view");
+            }
+            
+        } catch (Exception e) {
+            log("Error at CartController: " + e.toString());
+            response.sendRedirect("error-500.jsp");
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
     }
-
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
 }

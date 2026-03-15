@@ -1,85 +1,118 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controller;
 
+import dao.DiscountDAO;
+import dto.DiscountDTO;
+import dto.UserDTO;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.sql.Date;
+import java.util.List;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-/**
- *
- * @author PC
- */
+@WebServlet(name = "DiscountController", urlPatterns = {"/DiscountController"})
 public class DiscountController extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        try ( PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet DiscountController</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet DiscountController at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
+        
+        String action = request.getParameter("action");
+        DiscountDAO dao = new DiscountDAO();
+        HttpSession session = request.getSession();
+
+        // BẢO MẬT: Chỉ Admin (1) hoặc Manager (2) mới được quản lý mã giảm giá
+        UserDTO loginUser = (UserDTO) session.getAttribute("LOGIN_USER");
+        if (loginUser == null || (loginUser.getRoleId() != 1 && loginUser.getRoleId() != 2)) {
+            session.setAttribute("MSG_ERROR", "Bạn không có quyền quản lý mã giảm giá!");
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        try {
+            if (action == null || action.equals("list")) {
+                List<DiscountDTO> list = dao.readAll();
+                request.setAttribute("DISCOUNT_LIST", list);
+                request.getRequestDispatcher("admin/manage-discounts.jsp").forward(request, response);
+
+            } else if (action.equals("add")) {
+                // 1. THÊM MỚI MÃ
+                String code = request.getParameter("code");
+                int percentage = Integer.parseInt(request.getParameter("percentage"));
+                String startDate = request.getParameter("startDate");
+                String endDate = request.getParameter("endDate");
+
+                DiscountDTO dto = new DiscountDTO();
+                dto.setCode(code);
+                dto.setDiscount_percent(percentage); // Khớp với DTO
+                dto.setStart_date(Date.valueOf(startDate)); // Khớp với DTO
+                dto.setEnd_date(Date.valueOf(endDate)); // Khớp với DTO
+                dto.setStatus("Active"); // DTO dùng String
+
+                if (dao.create(dto)) {
+                    session.setAttribute("MSG_SUCCESS", "Tạo mã giảm giá mới thành công!");
+                } else {
+                    session.setAttribute("MSG_ERROR", "Mã này đã tồn tại hoặc lỗi hệ thống.");
+                }
+                response.sendRedirect("DiscountController?action=list");
+
+            } else if (action.equals("edit")) {
+                int id = Integer.parseInt(request.getParameter("id"));
+                DiscountDTO discount = dao.readById(id);
+                if (discount != null) {
+                    request.setAttribute("DISCOUNT_DETAIL", discount);
+                    request.getRequestDispatcher("admin/edit-discount.jsp").forward(request, response);
+                }
+
+            } else if (action.equals("update")) {
+                // 2. CẬP NHẬT MÃ
+                int id = Integer.parseInt(request.getParameter("id"));
+                String code = request.getParameter("code");
+                int percentage = Integer.parseInt(request.getParameter("percentage"));
+                String startDate = request.getParameter("startDate");
+                String endDate = request.getParameter("endDate");
+                // Lấy status từ form (ví dụ: Active/Inactive)
+                String status = request.getParameter("status"); 
+
+                // Sử dụng đúng constructor 6 tham số của NewsDTO bạn gửi
+                DiscountDTO dto = new DiscountDTO(id, code, percentage, 
+                        Date.valueOf(startDate), Date.valueOf(endDate), status);
+                
+                if (dao.update(dto)) {
+                    session.setAttribute("MSG_SUCCESS", "Cập nhật mã thành công!");
+                } else {
+                    session.setAttribute("MSG_ERROR", "Cập nhật thất bại.");
+                }
+                response.sendRedirect("DiscountController?action=list");
+
+            } else if (action.equals("delete")) {
+                int id = Integer.parseInt(request.getParameter("id"));
+                if (dao.delete(id)) {
+                    session.setAttribute("MSG_SUCCESS", "Đã xóa mã giảm giá.");
+                } else {
+                    session.setAttribute("MSG_ERROR", "Không thể xóa mã đã được sử dụng.");
+                }
+                response.sendRedirect("DiscountController?action=list");
+            }
+            
+        } catch (Exception e) {
+            log("Error at DiscountController: " + e.toString());
+            response.sendRedirect("error-500.jsp");
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
     }
-
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
 }
