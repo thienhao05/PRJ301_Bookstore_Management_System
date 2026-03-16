@@ -10,9 +10,9 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(name = "MainController", urlPatterns = {"/MainController"})
 public class MainController extends HttpServlet {
 
-    // Danh sách các Controller đích (Destination)
+    // 1. Khai báo hằng số để dễ quản lý tên Controller
     private static final String ERROR = "error-404.jsp";
-    private static final String HOME = "BookController?action=view";
+    private static final String HOME = "BookController?action=viewBooks";
 
     private static final String USER = "UserController";
     private static final String BOOK = "BookController";
@@ -24,49 +24,81 @@ public class MainController extends HttpServlet {
     private static final String DISCOUNT = "DiscountController";
     private static final String NEWS = "NewsController";
     private static final String NOTIFICATION = "NotificationController";
+    private static final String STAFF = "StaffController";
+    private static final String SHIFT = "ShiftController";
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
 
         String action = request.getParameter("action");
-        String url = ERROR; // Mặc định nếu không khớp action nào sẽ về trang lỗi
+        String url = ERROR;
 
         try {
+            // Trường hợp không có action -> Về trang chủ
             if (action == null || action.isEmpty()) {
                 url = HOME;
-            } // 1. NHÓM TÀI KHOẢN (USER)
-            else if ("login".equals(action) || "logout".equals(action) || "register".equals(action) || "profile".equals(action)) {
+            } // 2. PHÂN LUỒNG THEO NHÓM (DOMAIN)
+            // NHÓM A: TÀI KHOẢN & NGƯỜI DÙNG
+            else if ("login".equals(action) || "logout".equals(action)
+                    || "register".equals(action) || "profile".equals(action)) {
                 url = USER;
-            } // 2. NHÓM SÁCH & DANH MỤC
-            else if ("viewBooks".equals(action) || "search".equals(action) || "detail".equals(action)) {
+            } // NHÓM B: SÁCH & KHO (Gộp chung cả khách xem và Admin quản lý)
+            else if ("viewBooks".equals(action) || "search".equals(action) || "detail".equals(action)
+                    || "manageBooks".equals(action) || "addBook".equals(action)
+                    || "editBook".equals(action) || "deleteBook".equals(action)) {
                 url = BOOK;
-            } else if ("manageCategories".equals(action) || "addCategory".equals(action) || "editCategory".equals(action)) {
-                url = CATEGORY;
-            } // 3. NHÓM GIỎ HÀNG (CART)
-            else if ("viewCart".equals(action) || "addCart".equals(action) || "updateCart".equals(action) || "removeCart".equals(action)) {
-                url = CART;
-            } // 4. NHÓM ĐƠN HÀNG & THANH TOÁN (ORDER & PAYMENT)
-            else if ("checkout".equals(action) || "history".equals(action) || "manageOrders".equals(action)) {
+            } // NHÓM C: ĐƠN HÀNG (Checkout, Lịch sử, Quản lý đơn, Thống kê Dashboard)
+            else if ("checkout".equals(action) || "history".equals(action) || "dashboard".equals(action)
+                    || "manageOrders".equals(action) || "manageOrderDetail".equals(action)
+                    || "updateStatus".equals(action) || "update_status".equals(action)) {
                 url = ORDER;
-            } else if ("processPayment".equals(action) || "vnpay_return".equals(action)) {
-                url = PAYMENT;
-            } // 5. NHÓM ĐỊA CHỈ & GIẢM GIÁ (ADDRESS & DISCOUNT)
-            else if ("viewAddress".equals(action) || "addAddress".equals(action) || "setDefault".equals(action)) {
-                url = ADDRESS;
-            } else if ("manageDiscounts".equals(action) || "applyDiscount".equals(action)) {
-                url = DISCOUNT;
-            } // 6. NHÓM TIN TỨC & THÔNG BÁO (NEWS & NOTI)
-            else if ("viewNews".equals(action) || "manageNews".equals(action)) {
+            } // NHÓM D: TIN TỨC
+            else if ("viewNews".equals(action) || "manageNews".equals(action) || "addNews".equals(action)
+                    || "editNews".equals(action) || "updateNews".equals(action) || "deleteNews".equals(action)) {
                 url = NEWS;
-            } else if ("viewNoti".equals(action) || "markRead".equals(action)) {
+            } // NHÓM E: CÁC CHỨC NĂNG KHÁC (Giỏ hàng, Thanh toán, Địa chỉ...)
+            else if (action.contains("Cart")) {
+                url = CART;
+            } else if (action.contains("Category")) {
+                url = CATEGORY;
+            } else if (action.contains("Payment") || "vnpay_return".equals(action)) {
+                url = PAYMENT;
+            } else if (action.contains("Address") || "setDefault".equals(action)) {
+                url = ADDRESS;
+            } else if (action.contains("Discount")) {
+                url = DISCOUNT;
+            } else if (action.contains("Noti")) {
                 url = NOTIFICATION;
+            } else if (action.contains("Publisher")) {
+                url = "PublisherController";
+            } else if (action.contains("Review")) {
+                url = "ReviewController";
+            } else if (action.contains("Shift")) {
+                url = "ShiftController";
+            } else if (action.contains("Shift")) {
+                url = "ShiftController";
+            } else if ("manageStaffs".equals(action) || "addStaff".equals(action)
+                    || "editStaff".equals(action) || "updateStaff".equals(action)
+                    || "deleteStaff".equals(action)) {
+
+                url = STAFF; // Trong đó STAFF = "StaffController"
+            } // Giữ lại nhóm ca trực nếu bạn tách riêng ShiftController
+            else if (action != null && action.contains("Shift")) {
+                url = SHIFT;
+            } else if ("manageUsers".equals(action) || "addUser".equals(action)
+                    || "editUser".equals(action) || "deleteUser".equals(action)) {
+                url = USER;
+            } else if ("sendNotification".equals(action) || "viewNoti".equals(action)) {
+                url = NOTIFICATION;
+            } else if (action.contains("Address")) {
+                url = "AddressController";
             }
 
         } catch (Exception e) {
             log("Error at MainController: " + e.toString());
         } finally {
-            // Chuyển tiếp yêu cầu (Forward) kèm theo toàn bộ tham số ban đầu
+            // Luôn dùng Forward để giữ URL đẹp và chuyển tiếp tham số
             request.getRequestDispatcher(url).forward(request, response);
         }
     }

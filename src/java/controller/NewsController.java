@@ -18,7 +18,7 @@ public class NewsController extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        
+
         String action = request.getParameter("action");
         NewsDAO dao = new NewsDAO();
         HttpSession session = request.getSession();
@@ -26,11 +26,11 @@ public class NewsController extends HttpServlet {
         try {
             // 1. DÀNH CHO KHÁCH HÀNG: XEM DANH SÁCH TIN TỨC
             if (action == null || action.equals("view")) {
-                List<NewsDTO> list = dao.readAll(); 
+                List<NewsDTO> list = dao.readAll();
                 request.setAttribute("NEWS_LIST", list);
                 request.getRequestDispatcher("news.jsp").forward(request, response);
 
-            // 2. XEM CHI TIẾT MỘT BÀI VIẾT
+                // 2. XEM CHI TIẾT MỘT BÀI VIẾT
             } else if (action.equals("detail")) {
                 int id = Integer.parseInt(request.getParameter("id"));
                 NewsDTO news = dao.readById(id);
@@ -64,7 +64,7 @@ public class NewsController extends HttpServlet {
                     dto.setTitle(title);
                     dto.setContent(content);
                     // Set staff_id từ User đang đăng nhập
-                    dto.setStaff_id(loginUser.getUserId()); 
+                    dto.setStaff_id(loginUser.getUserId());
 
                     if (dao.create(dto)) {
                         session.setAttribute("MSG_SUCCESS", "Đăng bài viết mới thành công!");
@@ -93,8 +93,8 @@ public class NewsController extends HttpServlet {
                         dto.setTitle(title);
                         dto.setContent(content);
                         // Giữ nguyên staff_id cũ hoặc cập nhật người sửa mới nhất tùy bạn
-                        dto.setStaff_id(loginUser.getUserId()); 
-                        
+                        dto.setStaff_id(loginUser.getUserId());
+
                         if (dao.update(dto)) {
                             session.setAttribute("MSG_SUCCESS", "Cập nhật bài viết thành công!");
                         } else {
@@ -112,9 +112,43 @@ public class NewsController extends HttpServlet {
                         session.setAttribute("MSG_ERROR", "Xóa bài viết thất bại.");
                     }
                     response.sendRedirect("NewsController?action=manage");
+                } else if ("updateNews".equals(action)) {
+                    int id = Integer.parseInt(request.getParameter("id"));
+                    String title = request.getParameter("title");
+                    String content = request.getParameter("content");
+
+                    NewsDTO dto = dao.readById(id); // Lấy đối tượng cũ lên
+                    if (dto != null) {
+                        dto.setTitle(title);
+                        dto.setContent(content);
+
+                        if (dao.update(dto)) {
+                            session.setAttribute("MSG_SUCCESS", "Cập nhật bài viết thành công!");
+                        } else {
+                            session.setAttribute("MSG_ERROR", "Cập nhật thất bại!");
+                        }
+                    }
+                    response.sendRedirect("MainController?action=manageNews");
+                } else if ("updateNews".equals(action)) {
+                    int id = Integer.parseInt(request.getParameter("id"));
+                    String title = request.getParameter("title");
+                    String content = request.getParameter("content");
+
+                    NewsDTO dto = dao.readById(id); // Lấy đối tượng cũ lên
+                    if (dto != null) {
+                        dto.setTitle(title);
+                        dto.setContent(content);
+
+                        if (dao.update(dto)) {
+                            session.setAttribute("MSG_SUCCESS", "Cập nhật bài viết thành công!");
+                        } else {
+                            session.setAttribute("MSG_ERROR", "Cập nhật thất bại!");
+                        }
+                    }
+                    response.sendRedirect("MainController?action=manageNews");
                 }
             }
-            
+
         } catch (Exception e) {
             log("Error at NewsController: " + e.toString());
             response.sendRedirect("error-500.jsp");

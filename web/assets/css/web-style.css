@@ -1,1 +1,185 @@
+/* Project: Bookstore Management System - Client Area
+    Author: Hao (FPTU)
+    Vibe: Modern, Clean, Professional
+*/
 
+:root {
+    --primary-color: #0d6efd;
+    --primary-hover: #0056b3;
+    --bg-body: #f4f7f6;
+    --text-dark: #212529;
+    --text-muted: #6c757d;
+    --white: #ffffff;
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 8px 25px rgba(0, 0, 0, 0.08);
+    --border-radius: 15px;
+    --transition: 0.3s ease;
+}
+
+body {
+    background-color: var(--bg-body);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+/* --- NAVBAR CUSTOM --- */
+.navbar {
+    background-color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
+    padding: 15px 0;
+}
+
+.navbar-brand {
+    font-weight: 800;
+    color: var(--primary-color) !important;
+    letter-spacing: -0.5px;
+}
+
+.nav-link {
+    font-weight: 500;
+    color: var(--text-dark) !important;
+    margin: 0 10px;
+    transition: var(--transition);
+}
+
+.nav-link:hover {
+    color: var(--primary-color) !important;
+}
+
+/* --- COMMON CARDS (Dùng cho Shop, Cart, Detail) --- */
+.order-card {
+    border: none;
+    border-radius: var(--border-radius);
+    background: var(--white);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.order-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* --- BOOK CARDS (Shop & Home) --- */
+.book-card {
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    background: var(--white);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition);
+}
+
+.book-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+}
+
+.book-cover-wrapper {
+    height: 220px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.book-cover-wrapper img {
+    max-height: 100%;
+    transition: var(--transition);
+}
+
+.book-card:hover .book-cover-wrapper img {
+    transform: scale(1.05);
+}
+
+/* --- TYPOGRAPHY --- */
+.price-text {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+    min-height: 48px;
+}
+
+/* --- BUTTONS --- */
+.btn-primary-custom {
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.btn-primary-custom:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+}
+
+.btn-outline-custom {
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* --- CART & CHECKOUT SPECIFIC --- */
+.cart-item-img {
+    width: 60px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.quantity-control {
+    max-width: 120px;
+    border-radius: 8px;
+}
+
+.sticky-sidebar {
+    position: sticky;
+    top: 100px;
+}
+
+/* --- FOOTER --- */
+footer {
+    background-color: #212529;
+    color: rgba(255,255,255,0.6);
+    padding: 60px 0 30px;
+}
+
+footer h5 {
+    color: var(--white);
+    font-weight: 700;
+    margin-bottom: 25px;
+}
+
+footer a {
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+footer a:hover {
+    color: var(--white);
+    padding-left: 5px;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+    .book-cover-wrapper {
+        height: 180px;
+    }
+}

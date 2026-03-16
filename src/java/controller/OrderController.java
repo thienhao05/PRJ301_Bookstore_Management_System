@@ -3,13 +3,15 @@ package controller;
 import dao.BookDAO;
 import dao.CartItemDAO;
 import dao.OrderDAO;
-import dao.OrderDetailDAO; // Bạn nhớ tạo DAO này nhé
+import dao.OrderDetailDAO;
 import dto.CartItemDTO;
 import dto.OrderDTO;
 import dto.OrderDetailDTO;
 import dto.UserDTO;
+import dto.BookDTO; // Đảm bảo đã import BookDTO
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -23,7 +25,7 @@ public class OrderController extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        
+
         String action = request.getParameter("action");
         OrderDAO orderDao = new OrderDAO();
         OrderDetailDAO detailDao = new OrderDetailDAO();
@@ -38,13 +40,12 @@ public class OrderController extends HttpServlet {
         }
 
         try {
+            // 1. XỬ LÝ ĐẶT HÀNG (CHECKOUT)
             if ("checkout".equals(action)) {
-                // 1. XỬ LÝ ĐẶT HÀNG (TRỌNG TÂM)
                 int addressId = Integer.parseInt(request.getParameter("addressId"));
                 int shippingId = Integer.parseInt(request.getParameter("shippingId"));
                 int total = Integer.parseInt(request.getParameter("totalAmount"));
-                
-                // Tạo đối tượng Order
+
                 OrderDTO order = new OrderDTO();
                 order.setUser_id(user.getUserId());
                 order.setAddress_id(addressId);
@@ -52,57 +53,85 @@ public class OrderController extends HttpServlet {
                 order.setTotal_amount(total);
                 order.setStatus("Pending");
 
-                // Bước A: Lưu Order vào DB
-                boolean isOrderCreated = orderDao.create(order);
-                
-                if (isOrderCreated) {
-                    // Lấy ID đơn hàng vừa tạo (giả định bạn có hàm lấy LastID hoặc lấy theo User)
+                if (orderDao.create(order)) {
+                    // Lấy đơn hàng mới nhất của User vừa tạo
                     List<OrderDTO> userOrders = orderDao.getOrdersByUserId(user.getUserId());
-                    int currentOrderId = userOrders.get(0).getOrder_id(); 
+                    int currentOrderId = userOrders.get(0).getOrder_id();
 
-                    // Bước B: Chuyển toàn bộ CartItems sang OrderDetails
                     int cartId = (int) session.getAttribute("CART_ID");
                     List<CartItemDTO> cartItems = cartItemDao.getItemsByCartId(cartId);
 
                     for (CartItemDTO item : cartItems) {
-                        // Lưu chi tiết đơn hàng
+                        // 1. Lấy thông tin sách để có giá hiện tại
+                        BookDTO book = bookDao.readById(item.getBook_id());
+
+                        // Nếu tìm thấy sách thì lấy giá (double), không thì để là 0
+                        double bookPrice = (book != null) ? book.getPrice() : 0.0;
+
                         OrderDetailDTO detail = new OrderDetailDTO();
                         detail.setOrder_id(currentOrderId);
                         detail.setBook_id(item.getBook_id());
                         detail.setQuantity(item.getQuantity());
-                        // detail.setPrice(...); // Nên lấy giá thực tế của sách lúc đó
+
+                        // FIX: Ép kiểu từ double sang int để khớp với hàm setPrice(int) của bạn
+                        // Và nhớ xóa dấu ngoặc thừa nhé: (int) bookPrice
+                        detail.setPrice((int) bookPrice);
+
+                        // 2. Lưu vào bảng OrderDetail
                         detailDao.create(detail);
 
-                        // Bước C: Trừ số lượng tồn kho
+                        // 3. Cập nhật lại kho hàng
                         bookDao.updateStock(item.getBook_id(), item.getQuantity());
                     }
 
-                    // Chuyển sang bước thanh toán
+                    // Xóa giỏ hàng sau khi đặt thành công (Nên thực hiện)
+                    // cartItemDao.clearCart(cartId); 
                     response.sendRedirect("PaymentController?action=process&orderId=" + currentOrderId);
                 }
 
-            } else if ("history".equals(action)) {
-                // 2. XEM LỊCH SỬ MUA HÀNG
+            } // 2. XEM LỊCH SỬ (CHO USER)
+            else if ("history".equals(action)) {
                 List<OrderDTO> list = orderDao.getOrdersByUserId(user.getUserId());
                 request.setAttribute("ORDER_HISTORY", list);
                 request.getRequestDispatcher("order-history.jsp").forward(request, response);
-
-            } else if ("manage".equals(action)) {
-                // 3. ADMIN: QUẢN LÝ ĐƠN HÀNG
-                if (user.getRoleId() == 1 || user.getRoleId() == 2) {
+            } // 3. THỐNG KÊ DASHBOARD (CHO ADMIN)
+            else if ("dashboard".equals(action)) {
+                if (user.getRoleId() == 1) {
+                    Map<String, Object> stats = orderDao.getDashboardStats();
+                    request.setAttribute("TOTAL_REVENUE", stats.get("TOTAL_REVENUE"));
+                    request.setAttribute("TOTAL_ORDERS", stats.get("TOTAL_ORDERS"));
+                    request.setAttribute("TOTAL_USERS", stats.get("TOTAL_USERS"));
+                    request.setAttribute("TOTAL_BOOKS", stats.get("TOTAL_BOOKS"));
+                    request.setAttribute("RECENT_ORDERS", stats.get("RECENT_ORDERS"));
+                    request.getRequestDispatcher("admin/dashboard.jsp").forward(request, response);
+                } else {
+                    response.sendRedirect("error-403.jsp");
+                }
+            } // 4. QUẢN LÝ DANH SÁCH ĐƠN HÀNG (CHO ADMIN)
+            else if ("manageOrders".equals(action)) {
+                if (user.getRoleId() == 1) {
                     List<OrderDTO> allOrders = orderDao.readAll();
-                    request.setAttribute("ALL_ORDERS", allOrders);
+                    request.setAttribute("ORDER_LIST", allOrders);
                     request.getRequestDispatcher("admin/manage-orders.jsp").forward(request, response);
                 }
+            } // 5. CHI TIẾT ĐƠN HÀNG (CHO ADMIN)
+            else if ("manageOrderDetail".equals(action)) {
+                int orderId = Integer.parseInt(request.getParameter("id"));
+                OrderDTO order = orderDao.readById(orderId);
+                List<OrderDetailDTO> details = detailDao.getOrderDetailsByOrderId(orderId);
 
-            } else if ("update_status".equals(action)) {
-                // 4. CẬP NHẬT TRẠNG THÁI (Dành cho Admin)
+                request.setAttribute("ORDER", order);
+                request.setAttribute("DETAILS", details);
+                request.getRequestDispatcher("admin/admin-order-detail.jsp").forward(request, response);
+            } // 6. CẬP NHẬT TRẠNG THÁI
+            else if ("updateStatus".equals(action)) {
                 int orderId = Integer.parseInt(request.getParameter("orderId"));
                 String status = request.getParameter("status");
-                if (orderDao.updateOrderStatus(orderId, status)) {
-                    session.setAttribute("MSG_SUCCESS", "Đã cập nhật trạng thái đơn hàng!");
+
+                if (orderDao.updateStatus(orderId, status)) {
+                    session.setAttribute("MSG_SUCCESS", "Đã cập nhật đơn hàng #" + orderId);
                 }
-                response.sendRedirect("OrderController?action=manage");
+                response.sendRedirect("MainController?action=manageOrderDetail&id=" + orderId);
             }
 
         } catch (Exception e) {

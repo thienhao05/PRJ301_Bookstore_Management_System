@@ -16,8 +16,8 @@ import utils.PasswordUtil;
 @WebServlet(name = "UserController", urlPatterns = {"/UserController"})
 public class UserController extends HttpServlet {
 
-    private static final String LOGIN_PAGE = "login.jsp";
-    private static final String REGISTER_PAGE = "register.jsp";
+    private static final String LOGIN_PAGE = "/WEB-INF/views/web/login.jsp";
+    private static final String REGISTER_PAGE = "/WEB-INF/views/web/register.jsp";
     private static final String PROFILE_PAGE = "WEB-INF/views/user/profile.jsp";
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)

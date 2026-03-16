@@ -8,7 +8,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class OrderDAO implements ICRUD<OrderDTO> {
 
@@ -28,6 +30,12 @@ public class OrderDAO implements ICRUD<OrderDTO> {
     private static final String UPDATE_STATUS = "UPDATE Orders SET status = ? WHERE order_id = ?";
     private static final String SELECT_USER_ID_BY_ORDER_ID = "SELECT user_id FROM Orders WHERE order_id = ?";
     private static final String UPDATE_PAYMENT_INFO = "UPDATE Orders SET payment_method = ?, status = ? WHERE order_id = ?";
+
+    private static final String GET_TOTAL_REVENUE = "SELECT SUM(total_amount) AS total FROM Orders WHERE status = 'Delivered'";
+    private static final String GET_TOTAL_ORDERS = "SELECT COUNT(*) AS total FROM Orders";
+    private static final String GET_TOTAL_USERS = "SELECT COUNT(*) AS total FROM Users WHERE role_id = 2"; // Giả sử 2 là Role Khách hàng
+    private static final String GET_TOTAL_BOOKS = "SELECT SUM(stock) AS total FROM Books";
+    private static final String GET_RECENT_ORDERS = "SELECT TOP 5 * FROM Orders ORDER BY order_date DESC";
 
     // ==============================================================
     // TRIỂN KHAI CÁC HÀM TỪ INTERFACE ICRUD
@@ -221,6 +229,72 @@ public class OrderDAO implements ICRUD<OrderDTO> {
             pstm.setString(1, paymentMethod);
             pstm.setString(2, paymentStatus); // Ví dụ: "Paid" hoặc "Pending"
             pstm.setInt(3, orderId);
+
+            return pstm.executeUpdate() > 0;
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Lấy toàn bộ thông số cho trang Dashboard Admin
+     */
+    public Map<String, Object> getDashboardStats() {
+        Map<String, Object> stats = new HashMap<>();
+        try ( Connection conn = DbUtils.getConnection()) {
+
+            // 1. Tính tổng doanh thu
+            try ( PreparedStatement pstm = conn.prepareStatement(GET_TOTAL_REVENUE);  ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    stats.put("TOTAL_REVENUE", rs.getInt("total"));
+                }
+            }
+
+            // 2. Đếm tổng số đơn hàng
+            try ( PreparedStatement pstm = conn.prepareStatement(GET_TOTAL_ORDERS);  ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    stats.put("TOTAL_ORDERS", rs.getInt("total"));
+                }
+            }
+
+            // 3. Đếm tổng số khách hàng
+            try ( PreparedStatement pstm = conn.prepareStatement(GET_TOTAL_USERS);  ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    stats.put("TOTAL_USERS", rs.getInt("total"));
+                }
+            }
+
+            // 4. Tổng số lượng sách trong kho
+            try ( PreparedStatement pstm = conn.prepareStatement(GET_TOTAL_BOOKS);  ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    stats.put("TOTAL_BOOKS", rs.getInt("total"));
+                }
+            }
+
+            // 5. Lấy 5 đơn hàng gần nhất
+            List<OrderDTO> recentOrders = new ArrayList<>();
+            try ( PreparedStatement pstm = conn.prepareStatement(GET_RECENT_ORDERS);  ResultSet rs = pstm.executeQuery()) {
+                while (rs.next()) {
+                    recentOrders.add(mapResultSetToDTO(rs));
+                }
+            }
+            stats.put("RECENT_ORDERS", recentOrders);
+
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return stats;
+    }
+
+    /**
+     * Cập nhật trạng thái đơn hàng
+     */
+    public boolean updateStatus(int orderId, String status) {
+        try ( Connection conn = DbUtils.getConnection();  PreparedStatement pstm = conn.prepareStatement(UPDATE_STATUS)) {
+
+            pstm.setString(1, status);
+            pstm.setInt(2, orderId);
 
             return pstm.executeUpdate() > 0;
         } catch (SQLException | ClassNotFoundException e) {
