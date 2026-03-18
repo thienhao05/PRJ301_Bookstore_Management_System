@@ -63,6 +63,8 @@ public class MainController extends HttpServlet {
             else if ("checkout".equals(action) || "history".equals(action) || "dashboard".equals(action)
                     || "manageOrders".equals(action) || "manageOrderDetail".equals(action)
                     || "updateStatus".equals(action) || "update_status".equals(action)
+                    || "myOrders".equals(action)
+                    || "myOrderDetail".equals(action)
                     || "updateOrderStatus".equals(action)) {   // <-- THÊM DÒNG NÀY
                 url = ORDER;
             } // NHÓM D: TIN TỨC
