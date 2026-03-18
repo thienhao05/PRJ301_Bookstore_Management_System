@@ -36,10 +36,11 @@ public class ShiftDAO implements ICRUD<ShiftDTO> {
         try (Connection conn = DbUtils.getConnection();
              PreparedStatement pstm = conn.prepareStatement(INSERT_SHIFT)) {
              
-            pstm.setInt(1, obj.getStaff_id());
-            pstm.setDate(2, obj.getShift_date());
-            pstm.setTime(3, obj.getStart_time());
-            pstm.setTime(4, obj.getEnd_time());
+            pstm.setInt(1, obj.getStaffId());      // Đổi thành getStaffId()
+        pstm.setDate(2, obj.getShiftDate());   // Đổi thành getShiftDate()
+        pstm.setTime(3, obj.getStartTime());   // Đổi thành getStartTime()
+        pstm.setTime(4, obj.getEndTime());     // Đổi thành getEndTime()
+        pstm.setInt(5, obj.getId());           // Đổi thành getId()
             
             return pstm.executeUpdate() > 0;
         } catch (SQLException | ClassNotFoundException e) {
@@ -86,11 +87,11 @@ public class ShiftDAO implements ICRUD<ShiftDTO> {
         try (Connection conn = DbUtils.getConnection();
              PreparedStatement pstm = conn.prepareStatement(UPDATE_SHIFT)) {
              
-            pstm.setInt(1, obj.getStaff_id());
-            pstm.setDate(2, obj.getShift_date());
-            pstm.setTime(3, obj.getStart_time());
-            pstm.setTime(4, obj.getEnd_time());
-            pstm.setInt(5, obj.getShift_id());
+            pstm.setInt(1, obj.getStaffId());      // Đổi thành getStaffId()
+        pstm.setDate(2, obj.getShiftDate());   // Đổi thành getShiftDate()
+        pstm.setTime(3, obj.getStartTime());   // Đổi thành getStartTime()
+        pstm.setTime(4, obj.getEndTime());     // Đổi thành getEndTime()
+        pstm.setInt(5, obj.getId());           // Đổi thành getId();
             
             return pstm.executeUpdate() > 0;
         } catch (SQLException | ClassNotFoundException e) {
@@ -160,12 +161,16 @@ public class ShiftDAO implements ICRUD<ShiftDTO> {
     // HÀM MAPPER (SQL -> DTO)
     // ==============================================================
     private ShiftDTO mapResultSetToDTO(ResultSet rs) throws SQLException {
-        ShiftDTO dto = new ShiftDTO();
-        dto.setShift_id(rs.getInt("shift_id"));
-        dto.setStaff_id(rs.getInt("staff_id"));
-        dto.setShift_date(rs.getDate("shift_date"));
-        dto.setStart_time(rs.getTime("start_time"));
-        dto.setEnd_time(rs.getTime("end_time"));
-        return dto;
-    }
+    ShiftDTO dto = new ShiftDTO();
+    dto.setId(rs.getInt("shift_id"));
+    dto.setStaffId(rs.getInt("staff_id"));
+    dto.setShiftDate(rs.getDate("shift_date"));
+    dto.setStartTime(rs.getTime("start_time"));
+    dto.setEndTime(rs.getTime("end_time"));
+    
+    // Tạm thời gán giá trị để không bị lỗi 500 khi JSP gọi ${s.name}
+    dto.setName("Nhân viên #" + rs.getInt("staff_id"));
+    dto.setDescription("Lịch trực cố định");
+    return dto;
+}
 }

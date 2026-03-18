@@ -1,8 +1,3 @@
-<%-- 
-    Document   : manage-publishers
-    Created on : Mar 12, 2026, 4:44:05 AM
-    Author     : PC
---%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
@@ -13,26 +8,13 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
         <style>
-            body {
-                background-color: #f8f9fa;
-                font-family: 'Segoe UI', sans-serif;
-            }
-            .card {
-                border: none;
-                border-radius: 15px;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            }
-            .table thead {
-                background-color: #f1f3f5;
-            }
-            .contact-info {
-                font-size: 0.85rem;
-                color: #6c757d;
-            }
+            body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+            .card { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+            .table thead { background-color: #f1f3f5; }
+            .contact-info { font-size: 0.85rem; color: #6c757d; }
         </style>
     </head>
     <body>
-
         <div class="container py-4">
             <div class="d-flex justify-content-between align-items-center mb-4 px-2">
                 <div>
@@ -52,9 +34,17 @@
             <c:if test="${not empty sessionScope.MSG_SUCCESS}">
                 <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
                     <i class="bi bi-check-circle-fill me-2"></i> ${sessionScope.MSG_SUCCESS}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
                 <c:remove var="MSG_SUCCESS" scope="session"/>
+            </c:if>
+
+            <c:if test="${not empty sessionScope.MSG_ERROR}">
+                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+                    <i class="bi bi-x-circle-fill me-2"></i> ${sessionScope.MSG_ERROR}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <c:remove var="MSG_ERROR" scope="session"/>
             </c:if>
 
             <div class="card">
@@ -65,33 +55,28 @@
                                 <tr>
                                     <th class="ps-4 py-3">ID</th>
                                     <th>Tên Nhà Xuất Bản</th>
-                                    <th>Thông Tin Liên Hệ</th>
-                                    <th>Địa Chỉ</th>
+                                    <th>Địa Chỉ / Mô Tả</th>
                                     <th class="text-end pe-4">Thao Tác</th>
                                 </tr>
                             </thead>
                             <tbody>
                             <c:forEach var="p" items="${PUBLISHER_LIST}">
                                 <tr>
-                                    <td class="ps-4 text-muted fw-bold">#${p.publisher_id}</td>
+                                    <%-- ✅ Dùng p.id thay vì p.publisher_id --%>
+                                    <td class="ps-4 text-muted fw-bold">#${p.id}</td>
                                     <td><strong class="text-dark">${p.name}</strong></td>
+                                    <%-- ✅ Dùng p.description thay vì p.address (DAO map address -> description) --%>
                                     <td>
-                                        <div class="contact-info">
-                                            <i class="bi bi-envelope me-1"></i> ${p.email}<br>
-                                            <i class="bi bi-telephone me-1"></i> ${p.phone}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="text-truncate d-inline-block" style="max-width: 250px;" title="${p.address}">
-                                            ${p.address}
+                                        <span class="text-truncate d-inline-block" style="max-width: 350px;" title="${p.description}">
+                                            ${p.description}
                                         </span>
                                     </td>
                                     <td class="text-end pe-4">
                                         <div class="btn-group shadow-sm">
-                                            <a href="MainController?action=editPublisher&id=${p.publisher_id}" class="btn btn-sm btn-white text-info border">
+                                            <a href="MainController?action=editPublisher&id=${p.id}" class="btn btn-sm btn-white text-info border">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
-                                            <a href="MainController?action=deletePublisher&id=${p.publisher_id}" 
+                                            <a href="MainController?action=deletePublisher&id=${p.id}"
                                                class="btn btn-sm btn-white text-danger border"
                                                onclick="return confirm('Xóa Nhà xuất bản có thể ảnh hưởng đến các đầu sách liên quan. Bạn chắc chắn chứ?')">
                                                 <i class="bi bi-trash"></i>
@@ -102,7 +87,7 @@
                             </c:forEach>
                             <c:if test="${empty PUBLISHER_LIST}">
                                 <tr>
-                                    <td colspan="5" class="text-center py-5 text-muted">
+                                    <td colspan="4" class="text-center py-5 text-muted">
                                         Chưa có dữ liệu Nhà xuất bản.
                                     </td>
                                 </tr>
@@ -114,31 +99,22 @@
             </div>
         </div>
 
+        <%-- MODAL THÊM NXB --%>
         <div class="modal fade" id="addPublisherModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <form action="MainController" method="POST" class="modal-content border-0 shadow-lg">
                     <input type="hidden" name="action" value="addPublisher">
                     <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title fw-bold">Thiết Lập Nhà Xuất Bản</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h5 class="modal-title fw-bold">Thêm Nhà Xuất Bản Mới</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body p-4">
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Tên NXB</label>
+                            <label class="form-label fw-bold">Tên NXB <span class="text-danger">*</span></label>
                             <input type="text" name="name" class="form-control" placeholder="Ví dụ: NXB Trẻ" required>
                         </div>
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Email</label>
-                                <input type="email" name="email" class="form-control" placeholder="nxb@example.com">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Số điện thoại</label>
-                                <input type="text" name="phone" class="form-control" placeholder="028...">
-                            </div>
-                        </div>
                         <div class="mb-0">
-                            <label class="form-label fw-bold">Địa chỉ trụ sở</label>
+                            <label class="form-label fw-bold">Địa chỉ / Mô tả</label>
                             <textarea name="address" class="form-control" rows="3" placeholder="Số, Tên đường, Quận/Huyện..."></textarea>
                         </div>
                     </div>

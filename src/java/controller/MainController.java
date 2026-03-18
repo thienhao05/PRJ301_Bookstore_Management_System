@@ -122,6 +122,11 @@ public class MainController extends HttpServlet {
 
             // NHÓM: CA TRỰC
             } else if (action.contains("Shift")) {
+                mapAction(request, action, "manageShifts", "list");
+                mapAction(request, action, "addShift", "add");
+                mapAction(request, action, "editShift", "edit");
+                mapAction(request, action, "updateShift", "update");
+                mapAction(request, action, "deleteShift", "delete");
                 url = SHIFT;
 
             // NHÓM: THANH TOÁN
@@ -135,6 +140,9 @@ public class MainController extends HttpServlet {
             // NHÓM: THÔNG BÁO
             } else if (action.contains("Noti") || "sendNotification".equals(action)
                     || "viewNoti".equals(action)) {
+                // Thêm dòng này để NotificationController biết là cần hiện trang "Gửi"
+                mapAction(request, action, "sendNotification", "viewSendPage");
+
                 url = NOTIFICATION;
             }
 

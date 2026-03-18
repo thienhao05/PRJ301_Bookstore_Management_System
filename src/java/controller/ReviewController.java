@@ -18,22 +18,32 @@ public class ReviewController extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        
+
         String action = request.getParameter("action");
         ReviewDAO dao = new ReviewDAO();
         HttpSession session = request.getSession();
-        
-        // 1. KIỂM TRA ĐĂNG NHẬP (Chỉ user đã login mới được review hoặc quản lý)
+
+        // KIỂM TRA ĐĂNG NHẬP
         UserDTO user = (UserDTO) session.getAttribute("LOGIN_USER");
         if (user == null) {
             session.setAttribute("MSG_ERROR", "Bạn cần đăng nhập để thực hiện thao tác này!");
-            response.sendRedirect("login.jsp");
+            response.sendRedirect("MainController?action=login"); // ✅ SỬA
             return;
         }
 
         try {
-            if ("add".equals(action)) {
-                // 2. THÊM ĐÁNH GIÁ MỚI
+            // ✅ THÊM CASE manageReviews
+            if (action == null || "manageReviews".equals(action) || "list".equals(action)) {
+                // Chỉ Admin (1) hoặc Manager (2) mới xem được
+                if (user.getRoleId() == 1 || user.getRoleId() == 2) {
+                    List<ReviewDTO> list = dao.readAll();
+                    request.setAttribute("REVIEW_LIST", list);
+                    request.getRequestDispatcher("/WEB-INF/views/admin/manage-reviews.jsp").forward(request, response);
+                } else {
+                    response.sendRedirect("MainController?action=home"); // ✅ SỬA
+                }
+
+            } else if ("add".equals(action)) {
                 int bookId = Integer.parseInt(request.getParameter("bookId"));
                 int rating = Integer.parseInt(request.getParameter("rating"));
                 String comment = request.getParameter("comment");
@@ -49,19 +59,17 @@ public class ReviewController extends HttpServlet {
                 } else {
                     session.setAttribute("MSG_ERROR", "Gửi đánh giá thất bại. Vui lòng thử lại!");
                 }
-                
-                // Quay lại trang chi tiết cuốn sách vừa review
-                String url = request.getHeader("referer");
-                response.sendRedirect(url != null ? url : "BookController?action=detail&bookId=" + bookId);
+
+                String referer = request.getHeader("referer");
+                response.sendRedirect(referer != null ? referer : "MainController?action=bookDetail&bookId=" + bookId);
 
             } else if ("delete".equals(action)) {
-                // 3. XÓA ĐÁNH GIÁ (Admin hoặc chính chủ mới có quyền)
                 int reviewId = Integer.parseInt(request.getParameter("reviewId"));
                 ReviewDTO currentReview = dao.readById(reviewId);
-                
+
                 if (currentReview != null) {
-                    // Check quyền: Phải là Admin (Role 1) hoặc người viết Review đó mới được xóa
-                    if (user.getRoleId() == 1 || user.getUserId() == currentReview.getUser_id()) {
+                    if (user.getRoleId() == 1 || user.getRoleId() == 2
+                            || user.getUserId() == currentReview.getUser_id()) {
                         if (dao.delete(reviewId)) {
                             session.setAttribute("MSG_SUCCESS", "Đã xóa đánh giá.");
                         }
@@ -69,21 +77,11 @@ public class ReviewController extends HttpServlet {
                         session.setAttribute("MSG_ERROR", "Bạn không có quyền xóa đánh giá này!");
                     }
                 }
-                
-                String url = request.getHeader("referer");
-                response.sendRedirect(url != null ? url : "index.jsp");
 
-            } else if ("list".equals(action)) {
-                // 4. ADMIN: XEM TOÀN BỘ ĐÁNH GIÁ ĐỂ QUẢN LÝ
-                if (user.getRoleId() == 1) {
-                    List<ReviewDTO> list = dao.readAll();
-                    request.setAttribute("REVIEW_LIST", list);
-                    request.getRequestDispatcher("admin/manage-reviews.jsp").forward(request, response);
-                } else {
-                    response.sendRedirect("index.jsp");
-                }
+                String referer = request.getHeader("referer");
+                response.sendRedirect(referer != null ? referer : "MainController?action=manageReviews"); // ✅ SỬA
             }
-            
+
         } catch (Exception e) {
             log("Error at ReviewController: " + e.toString());
             request.getRequestDispatcher("/WEB-INF/views/web/error-500.jsp").forward(request, response);

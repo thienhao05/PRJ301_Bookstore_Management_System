@@ -31,31 +31,27 @@ public class StaffController extends HttpServlet {
         HttpSession session = request.getSession();
 
         UserDTO loginUser = (UserDTO) session.getAttribute("LOGIN_USER");
-        if (loginUser == null || loginUser.getRoleId() != 1) {
-            response.sendRedirect("login.jsp");
+        if (loginUser == null || (loginUser.getRoleId() != 1 && loginUser.getRoleId() != 2)) {
+            session.setAttribute("MSG_ERROR", "Bạn không có quyền truy cập khu vực này!");
+            response.sendRedirect("MainController?action=login");
             return;
         }
 
         try {
-            // 1. XEM DANH SÁCH
             if (action == null || "manageStaffs".equals(action)) {
                 List<StaffDTO> staffList = staffDao.readAll();
-                // Vẫn lấy SHIFT_LIST để hiện tên ca trực trên giao diện nếu cần
                 List<ShiftDTO> shiftList = shiftDao.readAll();
-
                 request.setAttribute("STAFF_LIST", staffList);
                 request.setAttribute("SHIFT_LIST", shiftList);
-                request.getRequestDispatcher("admin/manage-staffs.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/admin/manage-staff.jsp").forward(request, response);
 
-            } // 2. TẠO MỚI (Khớp hoàn toàn với Constructor StaffDTO)
-            else if ("addStaff".equals(action)) {
+            } else if ("addStaff".equals(action)) {
                 String fullName = request.getParameter("fullName");
                 String email = request.getParameter("email");
                 String password = request.getParameter("password");
                 double salary = Double.parseDouble(request.getParameter("salary"));
                 String hireDate = request.getParameter("hireDate");
 
-                // Bước A: Tạo User
                 UserDTO userStaff = new UserDTO();
                 userStaff.setUsername(fullName);
                 userStaff.setEmail(email);
@@ -66,33 +62,22 @@ public class StaffController extends HttpServlet {
                 if (userDao.create(userStaff)) {
                     UserDTO createdUser = userDao.getUserByEmail(email);
                     if (createdUser != null) {
-                        // FIX: Chỉ truyền đúng 5 tham số: staff_id (0), user_id, hire_date, salary, status
-                        StaffDTO staff = new StaffDTO(
-                                0,
-                                createdUser.getUserId(),
-                                Date.valueOf(hireDate),
-                                salary,
-                                "Active"
-                        );
-
+                        StaffDTO staff = new StaffDTO(0, createdUser.getUserId(), Date.valueOf(hireDate), salary, "Active");
                         staffDao.create(staff);
                         session.setAttribute("MSG_SUCCESS", "Nhân viên " + fullName + " đã sẵn sàng làm việc!");
                     }
                 } else {
-                    session.setAttribute("MSG_ERROR", "Email này đã có người dùng rồi Hao ơi!");
+                    session.setAttribute("MSG_ERROR", "Email này đã có người dùng rồi!");
                 }
                 response.sendRedirect("MainController?action=manageStaffs");
 
-            } // 3. LẤY DỮ LIỆU ĐỂ SỬA
-            else if ("editStaff".equals(action)) {
+            } else if ("editStaff".equals(action)) {
                 int staffId = Integer.parseInt(request.getParameter("id"));
                 StaffDTO staff = staffDao.readById(staffId);
-
                 request.setAttribute("STAFF_DETAIL", staff);
-                request.getRequestDispatcher("admin/edit-staff.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/admin/edit-staff.jsp").forward(request, response);
 
-            } // 4. CẬP NHẬT (Bỏ qua shift_id vì DTO không có)
-            else if ("updateStaff".equals(action)) {
+            } else if ("updateStaff".equals(action)) {
                 int staffId = Integer.parseInt(request.getParameter("staffId"));
                 double salary = Double.parseDouble(request.getParameter("salary"));
                 String hireDateStr = request.getParameter("hireDate");
@@ -103,15 +88,13 @@ public class StaffController extends HttpServlet {
                     staff.setSalary(salary);
                     staff.setHire_date(Date.valueOf(hireDateStr));
                     staff.setStatus(status);
-
                     if (staffDao.update(staff)) {
                         session.setAttribute("MSG_SUCCESS", "Đã cập nhật hồ sơ nhân sự.");
                     }
                 }
                 response.sendRedirect("MainController?action=manageStaffs");
 
-            } // 5. XÓA / ĐÌNH CHỈ
-            else if ("deleteStaff".equals(action)) {
+            } else if ("deleteStaff".equals(action)) {
                 int staffId = Integer.parseInt(request.getParameter("id"));
                 if (staffDao.delete(staffId)) {
                     session.setAttribute("MSG_SUCCESS", "Nhân viên đã nghỉ việc.");

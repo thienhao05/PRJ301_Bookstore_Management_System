@@ -23,61 +23,56 @@ public class PublisherController extends HttpServlet {
         PublisherDAO dao = new PublisherDAO();
         HttpSession session = request.getSession();
 
-        // 1. KIỂM TRA QUYỀN (ADMIN MỚI ĐƯỢC QUẢN LÝ NXB)
+        // KIỂM TRA QUYỀN: Admin (1) hoặc Manager (2)
         UserDTO user = (UserDTO) session.getAttribute("LOGIN_USER");
-        if (user == null || user.getRoleId() != 1) { // Giả sử Role 1 là Admin
-            response.sendRedirect("login.jsp");
+        if (user == null || (user.getRoleId() != 1 && user.getRoleId() != 2)) {
+            session.setAttribute("MSG_ERROR", "Bạn không có quyền truy cập khu vực này!");
+            response.sendRedirect("MainController?action=login"); // ✅ SỬA
             return;
         }
 
         try {
-            // MẶC ĐỊNH HOẶC XEM DANH SÁCH
             if (action == null || action.equals("managePublishers")) {
                 List<PublisherDTO> list = dao.readAll();
                 request.setAttribute("PUBLISHER_LIST", list);
-                request.getRequestDispatcher("admin/manage-publishers.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/admin/manage-publishers.jsp").forward(request, response);
 
             } else if (action.equals("addPublisher")) {
-                // THÊM MỚI: Map "address" từ giao diện vào "description" của DTO
                 String name = request.getParameter("name");
                 String address = request.getParameter("address");
 
-                // PublisherDTO(id, name, description)
-                // Truyền 'address' vào vị trí 'description' để khớp với DAO
                 PublisherDTO dto = new PublisherDTO(0, name, address);
-
                 if (dao.create(dto)) {
                     session.setAttribute("MSG_SUCCESS", "Thêm nhà xuất bản thành công!");
+                } else {
+                    session.setAttribute("MSG_ERROR", "Thêm thất bại, vui lòng thử lại.");
                 }
                 response.sendRedirect("MainController?action=managePublishers");
 
             } else if (action.equals("editPublisher")) {
-                // 3. LẤY DỮ LIỆU ĐỂ SỬA
                 int id = Integer.parseInt(request.getParameter("id"));
                 PublisherDTO publisher = dao.readById(id);
                 if (publisher != null) {
                     request.setAttribute("PUBLISHER_DETAIL", publisher);
-                    request.getRequestDispatcher("admin/edit-publisher.jsp").forward(request, response);
+                    request.getRequestDispatcher("/WEB-INF/views/admin/edit-publisher.jsp").forward(request, response);
                 } else {
                     response.sendRedirect("MainController?action=managePublishers");
                 }
 
             } else if (action.equals("updatePublisher")) {
-                // 4. CẬP NHẬT THAY ĐỔI
                 int id = Integer.parseInt(request.getParameter("id"));
                 String name = request.getParameter("name");
-                String email = request.getParameter("email");
-                String phone = request.getParameter("phone");
-                String address = request.getParameter("address");
+                String address = request.getParameter("address"); // ✅ SỬA (trước dùng nhầm 'action')
 
-                PublisherDTO dto = new PublisherDTO(id, name, action);
+                PublisherDTO dto = new PublisherDTO(id, name, address);
                 if (dao.update(dto)) {
                     session.setAttribute("MSG_SUCCESS", "Cập nhật NXB thành công!");
+                } else {
+                    session.setAttribute("MSG_ERROR", "Cập nhật thất bại.");
                 }
                 response.sendRedirect("MainController?action=managePublishers");
 
             } else if (action.equals("deletePublisher")) {
-                // 5. XÓA NXB
                 int id = Integer.parseInt(request.getParameter("id"));
                 if (dao.delete(id)) {
                     session.setAttribute("MSG_SUCCESS", "Đã xóa nhà xuất bản.");

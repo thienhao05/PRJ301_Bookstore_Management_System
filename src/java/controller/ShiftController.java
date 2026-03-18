@@ -20,60 +20,65 @@ public class ShiftController extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        
-        String action = request.getParameter("action");
+
+        // Ưu tiên lấy action từ Attribute (do MainController map) trước, sau đó mới lấy từ Parameter
+        String action = (String) request.getAttribute("action");
+        if (action == null) {
+            action = request.getParameter("action");
+        }
+
         ShiftDAO shiftDao = new ShiftDAO();
         StaffDAO staffDao = new StaffDAO();
         HttpSession session = request.getSession();
 
-        // BẢO MẬT: Chỉ Admin hoặc Manager mới được quyền sắp xếp ca làm việc
+        // Kiểm tra quyền đăng nhập
         UserDTO loginUser = (UserDTO) session.getAttribute("LOGIN_USER");
         if (loginUser == null || (loginUser.getRoleId() != 1 && loginUser.getRoleId() != 2)) {
             session.setAttribute("MSG_ERROR", "Bạn không có quyền quản lý lịch làm việc!");
-            response.sendRedirect("login.jsp");
+            response.sendRedirect("MainController?action=login");
             return;
         }
 
         try {
-            if (action == null || action.equals("list")) {
-                // 1. XEM DANH SÁCH CA TRỰC
+            // Trường hợp: Xem danh sách ca làm (manageShifts)
+            if (action == null || "list".equals(action) || "manageShifts".equals(action)) {
                 List<ShiftDTO> list = shiftDao.readAll();
                 request.setAttribute("SHIFT_LIST", list);
-                request.getRequestDispatcher("admin/manage-shifts.jsp").forward(request, response);
+                // Đảm bảo đường dẫn file JSP này chính xác trong thư mục của bạn
+                request.getRequestDispatcher("/WEB-INF/views/admin/manage-shifts.jsp").forward(request, response);
 
-            } else if (action.equals("prepare_add")) {
-                // 2. CHUẨN BỊ FORM THÊM (Cần list Staff để chọn)
+            } else if ("prepare_add".equals(action)) {
                 List<StaffDTO> staffList = staffDao.readAll();
                 request.setAttribute("STAFF_LIST", staffList);
-                request.getRequestDispatcher("admin/add-shift.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/admin/add-shift.jsp").forward(request, response);
 
-            } else if (action.equals("add")) {
-                // 3. XỬ LÝ THÊM CA MỚI
+            } else if ("add".equals(action)) {
                 int staffId = Integer.parseInt(request.getParameter("staffId"));
                 String startTime = request.getParameter("startTime");
                 String endTime = request.getParameter("endTime");
                 String shiftDate = request.getParameter("shiftDate");
 
+                // Giả định ShiftDTO có constructor phù hợp
                 ShiftDTO dto = new ShiftDTO(0, staffId, startTime, endTime, java.sql.Date.valueOf(shiftDate));
                 if (shiftDao.create(dto)) {
                     session.setAttribute("MSG_SUCCESS", "Phân ca thành công!");
                 } else {
                     session.setAttribute("MSG_ERROR", "Lỗi: Nhân viên đã có ca trùng vào thời gian này.");
                 }
-                response.sendRedirect("ShiftController?action=list");
+                response.sendRedirect("MainController?action=manageShifts");
 
-            } else if (action.equals("edit")) {
-                // 4. LẤY THÔNG TIN ĐỂ SỬA
-                int id = Integer.parseInt(request.getParameter("id"));
-                ShiftDTO shift = shiftDao.readById(id);
-                List<StaffDTO> staffList = staffDao.readAll();
-                
-                request.setAttribute("SHIFT_DETAIL", shift);
-                request.setAttribute("STAFF_LIST", staffList);
-                request.getRequestDispatcher("admin/edit-shift.jsp").forward(request, response);
+            } else if ("edit".equals(action)) {
+                String idStr = request.getParameter("id");
+                if (idStr != null) {
+                    int id = Integer.parseInt(idStr);
+                    ShiftDTO shift = shiftDao.readById(id);
+                    List<StaffDTO> staffList = staffDao.readAll();
+                    request.setAttribute("SHIFT_DETAIL", shift);
+                    request.setAttribute("STAFF_LIST", staffList);
+                    request.getRequestDispatcher("/WEB-INF/views/admin/edit-shift.jsp").forward(request, response);
+                }
 
-            } else if (action.equals("update")) {
-                // 5. CẬP NHẬT CA TRỰC
+            } else if ("update".equals(action)) {
                 int id = Integer.parseInt(request.getParameter("id"));
                 int staffId = Integer.parseInt(request.getParameter("staffId"));
                 String startTime = request.getParameter("startTime");
@@ -86,19 +91,19 @@ public class ShiftController extends HttpServlet {
                 } else {
                     session.setAttribute("MSG_ERROR", "Cập nhật thất bại!");
                 }
-                response.sendRedirect("ShiftController?action=list");
+                response.sendRedirect("MainController?action=manageShifts");
 
-            } else if (action.equals("delete")) {
-                // 6. XÓA CA TRỰC
+            } else if ("delete".equals(action)) {
                 int id = Integer.parseInt(request.getParameter("id"));
                 if (shiftDao.delete(id)) {
                     session.setAttribute("MSG_SUCCESS", "Đã xóa ca trực.");
                 }
-                response.sendRedirect("ShiftController?action=list");
+                response.sendRedirect("MainController?action=manageShifts");
             }
-            
+
         } catch (Exception e) {
             log("Error at ShiftController: " + e.toString());
+            // Nếu có trang error-500.jsp thì dùng, không thì bỏ dòng này để thấy lỗi chi tiết trên console
             request.getRequestDispatcher("/WEB-INF/views/web/error-500.jsp").forward(request, response);
         }
     }

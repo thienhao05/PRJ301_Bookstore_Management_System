@@ -1,73 +1,47 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package dto;
 
 import java.sql.Date;
 import java.sql.Time;
 
 public class ShiftDTO {
+    private int id;
+    private int staffId;
+    private Date shiftDate;
+    private Time startTime;
+    private Time endTime;
+    private String name;        // Để hiển thị tên nhân viên hoặc tên ca
+    private String description; // Để hiển thị mô tả ca
 
-    private int shift_id;
-    private int staff_id;
-    private Date shift_date;
-    private Time start_time;
-    private Time end_time;
+    public ShiftDTO() {}
+    // Trong ShiftDTO.java
+public ShiftDTO(int id, int staffId, String startTime, String endTime, Date shiftDate) {
+    this.id = id;
+    this.staffId = staffId;
+    // Chuyển String sang java.sql.Time
+    this.startTime = java.sql.Time.valueOf(startTime + ":00"); 
+    this.endTime = java.sql.Time.valueOf(endTime + ":00");
+    this.shiftDate = shiftDate;
+}
 
-    public ShiftDTO() {
-    }
+    // Getter & Setter chuẩn để JSP ${s.id}, ${s.name}, ${s.startTime} hoạt động
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public ShiftDTO(int shift_id, int staff_id, Date shift_date, Time start_time, Time end_time) {
-        this.shift_id = shift_id;
-        this.staff_id = staff_id;
-        this.shift_date = shift_date;
-        this.start_time = start_time;
-        this.end_time = end_time;
-    }
+    public int getStaffId() { return staffId; }
+    public void setStaffId(int staffId) { this.staffId = staffId; }
 
-    public ShiftDTO(int id, int staffId, String startTime, String endTime, Date valueOf) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+    public Date getShiftDate() { return shiftDate; }
+    public void setShiftDate(Date shiftDate) { this.shiftDate = shiftDate; }
 
-    public int getShift_id() {
-        return shift_id;
-    }
+    public Time getStartTime() { return startTime; }
+    public void setStartTime(Time startTime) { this.startTime = startTime; }
 
-    public void setShift_id(int shift_id) {
-        this.shift_id = shift_id;
-    }
+    public Time getEndTime() { return endTime; }
+    public void setEndTime(Time endTime) { this.endTime = endTime; }
 
-    public int getStaff_id() {
-        return staff_id;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public void setStaff_id(int staff_id) {
-        this.staff_id = staff_id;
-    }
-
-    public Date getShift_date() {
-        return shift_date;
-    }
-
-    public void setShift_date(Date shift_date) {
-        this.shift_date = shift_date;
-    }
-
-    public Time getStart_time() {
-        return start_time;
-    }
-
-    public void setStart_time(Time start_time) {
-        this.start_time = start_time;
-    }
-
-    public Time getEnd_time() {
-        return end_time;
-    }
-
-    public void setEnd_time(Time end_time) {
-        this.end_time = end_time;
-    }
-    
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 }
