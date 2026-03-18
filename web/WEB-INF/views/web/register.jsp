@@ -1,8 +1,3 @@
-<%-- 
-    Document   : register
-    Created on : Mar 12, 2026, 4:50:26 AM
-    Author     : PC (Hào)
---%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
@@ -10,7 +5,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Tham Gia Cùng Hào's Bookstore</title>
+        <title>Đăng Ký - Hào's Bookstore</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
         <style>
@@ -28,7 +23,7 @@
                 overflow: hidden;
             }
             .register-header {
-                background-color: #198754; /* Màu xanh lá tạo cảm giác tươi mới */
+                background-color: #198754;
                 padding: 30px;
                 color: white;
                 text-align: center;
@@ -60,17 +55,25 @@
         </style>
     </head>
     <body>
-
         <div class="container py-5">
             <div class="row justify-content-center">
                 <div class="col-md-8 col-lg-6 col-xl-5">
 
-                    <%@include file="../components/message-alert.jsp" %>
+                    <%-- Hiện thông báo lỗi nếu có --%>
+                    <c:if test="${not empty requestScope.MSG_ERROR}">
+                        <div class="alert alert-danger border-0 shadow-sm mb-4" role="alert">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                            ${requestScope.MSG_ERROR}
+                        </div>
+                    </c:if>
 
                     <div class="card register-card">
                         <div class="register-header">
+                            <i class="bi bi-book-half display-5 mb-2"></i>
                             <h3 class="fw-bold mb-0">Tạo Tài Khoản</h3>
-                            <p class="small opacity-75 mb-0">Trở thành thành viên của gia đình Bookstore</p>
+                            <p class="small opacity-75 mb-0">
+                                Trở thành thành viên của Hào's Bookstore
+                            </p>
                         </div>
 
                         <div class="card-body p-4 p-md-5 bg-white">
@@ -78,77 +81,166 @@
                                 <input type="hidden" name="action" value="register">
 
                                 <div class="row g-3">
-                                    <div class="col-md-12">
-                                        <label class="form-label text-uppercase small">Tên đăng nhập</label>
-                                        <input type="text" name="username" class="form-control" placeholder="Ví dụ: hao.tien123" required>
+
+                                    <%-- Họ và tên --%>
+                                    <div class="col-12">
+                                        <label class="form-label text-uppercase small">
+                                            Họ và Tên <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0">
+                                                <i class="bi bi-person text-muted"></i>
+                                            </span>
+                                            <input type="text"
+                                                   name="fullName"
+                                                   class="form-control border-start-0"
+                                                   placeholder="Nguyễn Văn A"
+                                                   required>
+                                        </div>
                                     </div>
 
-                                    <div class="col-md-12">
-                                        <label class="form-label text-uppercase small">Họ và Tên</label>
-                                        <input type="text" name="fullName" class="form-control" placeholder="Nguyễn Thiên Hào" required>
+                                    <%-- Email --%>
+                                    <div class="col-12">
+                                        <label class="form-label text-uppercase small">
+                                            Địa chỉ Email <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0">
+                                                <i class="bi bi-envelope text-muted"></i>
+                                            </span>
+                                            <input type="email"
+                                                   name="email"
+                                                   class="form-control border-start-0"
+                                                   placeholder="example@email.com"
+                                                   required>
+                                        </div>
                                     </div>
 
-                                    <div class="col-md-7">
-                                        <label class="form-label text-uppercase small">Email</label>
-                                        <input type="email" name="email" class="form-control" placeholder="hao@fpt.edu.vn" required>
-                                    </div>
-                                    <div class="col-md-5">
-                                        <label class="form-label text-uppercase small">Số điện thoại</label>
-                                        <input type="tel" name="phone" class="form-control" placeholder="090..." required>
+                                    <%-- Số điện thoại --%>
+                                    <div class="col-12">
+                                        <label class="form-label text-uppercase small">
+                                            Số điện thoại
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0">
+                                                <i class="bi bi-telephone text-muted"></i>
+                                            </span>
+                                            <input type="tel"
+                                                   name="phone"
+                                                   class="form-control border-start-0"
+                                                   placeholder="090xxxxxxx">
+                                        </div>
                                     </div>
 
+                                    <%-- Mật khẩu --%>
                                     <div class="col-md-6">
-                                        <label class="form-label text-uppercase small">Mật khẩu</label>
-                                        <input type="password" id="password" name="password" class="form-control" required minlength="6">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label text-uppercase small">Xác nhận mật khẩu</label>
-                                        <input type="password" id="confirmPassword" class="form-control" required>
+                                        <label class="form-label text-uppercase small">
+                                            Mật khẩu <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0">
+                                                <i class="bi bi-lock text-muted"></i>
+                                            </span>
+                                            <input type="password"
+                                                   id="password"
+                                                   name="password"
+                                                   class="form-control border-start-0"
+                                                   placeholder="Tối thiểu 6 ký tự"
+                                                   required minlength="6">
+                                        </div>
                                     </div>
 
-                                    <div id="passwordError" class="text-danger small d-none mb-2">
-                                        <i class="bi bi-exclamation-circle me-1"></i> Mật khẩu xác nhận không khớp!
+                                    <%-- Xác nhận mật khẩu --%>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-uppercase small">
+                                            Xác nhận mật khẩu <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0">
+                                                <i class="bi bi-lock-fill text-muted"></i>
+                                            </span>
+                                            <%-- QUAN TRỌNG: name="confirm" phải khớp với controller --%>
+                                            <input type="password"
+                                                   id="confirmPassword"
+                                                   name="confirm"
+                                                   class="form-control border-start-0"
+                                                   placeholder="Nhập lại mật khẩu"
+                                                   required>
+                                        </div>
                                     </div>
+
+                                    <%-- Thông báo lỗi mật khẩu (client-side) --%>
+                                    <div class="col-12">
+                                        <div id="passwordError"
+                                             class="alert alert-danger py-2 small d-none mb-0">
+                                            <i class="bi bi-exclamation-circle me-1"></i>
+                                            Mật khẩu xác nhận không khớp!
+                                        </div>
+                                    </div>
+
                                 </div>
 
+                                <%-- Nút đăng ký --%>
                                 <div class="d-grid mt-4">
                                     <button type="submit" class="btn btn-success btn-register">
-                                        Đăng Ký Thành Viên <i class="bi bi-person-plus ms-2"></i>
+                                        <i class="bi bi-person-plus me-2"></i>
+                                        Đăng Ký Thành Viên
                                     </button>
                                 </div>
 
-                                <div class="text-center mt-4 pt-2 border-top">
-                                    <p class="small text-muted mb-0">Bạn đã có tài khoản?</p>
-                                    <a href="login.jsp" class="fw-bold text-decoration-none text-success">Đăng nhập ngay</a>
+                                <%-- Link đăng nhập --%>
+                                <div class="text-center mt-4 pt-3 border-top">
+                                    <p class="small text-muted mb-1">Bạn đã có tài khoản?</p>
+                                    <a href="MainController?action=login"
+                                       class="fw-bold text-decoration-none text-success">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i>
+                                        Đăng nhập ngay
+                                    </a>
                                 </div>
                             </form>
                         </div>
                     </div>
 
+                    <%-- Link về trang chủ --%>
                     <div class="text-center mt-4">
-                        <a href="MainController?action=home" class="text-muted small text-decoration-none">
-                            <i class="bi bi-house-door me-1"></i> Quay về trang chủ
+                        <a href="MainController?action=home"
+                           class="text-muted small text-decoration-none">
+                            <i class="bi bi-house-door me-1"></i>
+                            Quay về trang chủ
                         </a>
                     </div>
+
                 </div>
             </div>
         </div>
 
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script>
-            // Script kiểm tra mật khẩu khớp nhau ngay tại Client
+            // Kiểm tra mật khẩu khớp ngay tại client trước khi submit
             document.getElementById('registerForm').addEventListener('submit', function (e) {
                 const pass = document.getElementById('password').value;
                 const confirm = document.getElementById('confirmPassword').value;
                 const error = document.getElementById('passwordError');
 
                 if (pass !== confirm) {
-                    e.preventDefault();
+                    e.preventDefault(); // chặn submit
                     error.classList.remove('d-none');
+                    document.getElementById('confirmPassword').focus();
                 } else {
                     error.classList.add('d-none');
                 }
             });
+
+            // Ẩn thông báo lỗi khi user gõ lại
+            document.getElementById('confirmPassword').addEventListener('input', function () {
+                const pass = document.getElementById('password').value;
+                const confirm = this.value;
+                const error = document.getElementById('passwordError');
+
+                if (pass === confirm) {
+                    error.classList.add('d-none');
+                }
+            });
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

@@ -163,9 +163,15 @@ public class BookDAO implements ICRUD<BookDTO> {
      */
     public List<BookDTO> searchBooks(String keyword) {
         List<BookDTO> list = new ArrayList<>();
+
+        // Nếu keyword rỗng thì trả về toàn bộ sách
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return readAll();
+        }
+
         try ( Connection conn = DbUtils.getConnection();  PreparedStatement pstm = conn.prepareStatement(SEARCH_BOOKS)) {
 
-            String searchPattern = "%" + keyword + "%";
+            String searchPattern = "%" + keyword.trim() + "%";
             pstm.setString(1, searchPattern);
             pstm.setString(2, searchPattern);
 
