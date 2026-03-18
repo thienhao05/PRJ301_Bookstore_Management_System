@@ -1,71 +1,48 @@
 package dto;
 
 public class UserDTO {
-
-    private int userId;
-    private String username;
+    private int    userId;
+    private String username;      // map từ cột full_name
     private String password;
     private String email;
-    private int roleId;
+    private String phone;         // thêm mới
+    private int    roleId;
     private boolean status;
 
-    public UserDTO() {
-    }
+    public UserDTO() {}
 
-    public UserDTO(int userId, String username, String password, String email, int roleId, boolean status) {
-        this.userId = userId;
+    public UserDTO(int userId, String username, String password,
+                   String email, String phone, int roleId, boolean status) {
+        this.userId   = userId;
         this.username = username;
         this.password = password;
-        this.email = email;
-        this.roleId = roleId;
-        this.status = status;
+        this.email    = email;
+        this.phone    = phone;
+        this.roleId   = roleId;
+        this.status   = status;
     }
 
-    public int getUserId() {
-        return userId;
-    }
+    // Alias để JSP dùng .fullName không bị null
+    public String getFullName() { return username; }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
+    public int     getUserId()              { return userId; }
+    public void    setUserId(int userId)    { this.userId = userId; }
 
-    public String getUsername() {
-        return username;
-    }
+    public String  getUsername()            { return username; }
+    public void    setUsername(String u)    { this.username = u; }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    public String  getPassword()            { return password; }
+    public void    setPassword(String p)    { this.password = p; }
 
-    public String getPassword() {
-        return password;
-    }
+    public String  getEmail()               { return email; }
+    public void    setEmail(String e)       { this.email = e; }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public String  getPhone()               { return phone; }
+    public void    setPhone(String phone)   { this.phone = phone; }
 
-    public String getEmail() {
-        return email;
-    }
+    public int     getRoleId()              { return roleId; }
+    public void    setRoleId(int roleId)    { this.roleId = roleId; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public int getRoleId() {
-        return roleId;
-    }
-
-    public void setRoleId(int roleId) {
-        this.roleId = roleId;
-    }
-
-    public boolean isStatus() {
-        return status;
-    }
-
-    public void setStatus(boolean status) {
-        this.status = status;
-    }
+    public boolean isStatus()               { return status; }
+    public void    setStatus(boolean s)     { this.status = s; }
 }

@@ -100,7 +100,7 @@ public class DiscountController extends HttpServlet {
             
         } catch (Exception e) {
             log("Error at DiscountController: " + e.toString());
-            response.sendRedirect("error-500.jsp");
+            request.getRequestDispatcher("/WEB-INF/views/web/error-500.jsp").forward(request, response);
         }
     }
 

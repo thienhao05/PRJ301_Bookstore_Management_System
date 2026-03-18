@@ -5,11 +5,11 @@
     UserDTO user = (UserDTO) session.getAttribute("LOGIN_USER");
 
     if (user != null) {
-        // Nếu là Admin (AD), đẩy thẳng vào Dashboard để quản lý
-        if ("AD".equals(user.getRoleId())) {
+        // Nếu là Admin (roleId = 1 hoặc 2), đẩy thẳng vào Dashboard để quản lý
+        if (user.getRoleId() == 1 || user.getRoleId() == 2) {
             response.sendRedirect("MainController?action=dashboard");
-        } // Nếu là khách hàng (US) hoặc các role khác, đẩy về trang chủ mua sắm
-        else {
+        } else {
+            // Nếu là khách hàng hoặc role khác, đẩy về trang chủ mua sắm
             response.sendRedirect("MainController?action=home");
         }
         return; // Dừng xử lý các dòng bên dưới

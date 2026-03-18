@@ -16,102 +16,163 @@ import utils.PasswordUtil;
 @WebServlet(name = "UserController", urlPatterns = {"/UserController"})
 public class UserController extends HttpServlet {
 
-    private static final String LOGIN_PAGE = "/WEB-INF/views/web/login.jsp";
+    private static final String LOGIN_VIEW = "/WEB-INF/views/web/login.jsp";
+    private static final String LOGIN_URL = "MainController?action=login";
     private static final String REGISTER_PAGE = "/WEB-INF/views/web/register.jsp";
-    private static final String PROFILE_PAGE = "WEB-INF/views/user/profile.jsp";
+    private static final String PROFILE_PAGE = "/WEB-INF/views/user/profile.jsp";
+
+    private final UserDAO userDAO = new UserDAO();
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
+
         String action = request.getParameter("action");
-        UserDAO userDao = new UserDAO();
+        if (action == null) {
+            action = "";
+        }
+
         HttpSession session = request.getSession();
 
         try {
-            // 1. ACTION: ĐĂNG NHẬP (LOGIN)
-            if ("login".equals(action)) {
-                String email = request.getParameter("email");
-                String password = request.getParameter("password");
-                
-                // Bước 1: Băm mật khẩu người dùng vừa nhập
-                String hashedInput = PasswordUtil.hashPassword(password);
-                
-                // Bước 2: Truyền password đã băm xuống DAO để so khớp
-                UserDTO user = userDao.login(email, hashedInput);
-
-                if (user != null) {
-                    session.setAttribute("LOGIN_USER", user);
-                    
-                    // Phân quyền điều hướng dựa trên roleId
-                    if (user.getRoleId() == 1 || user.getRoleId() == 2) { // Admin/Manager
-                        response.sendRedirect("admin/dashboard.jsp");
-                    } else {
-                        response.sendRedirect("index.jsp");
-                    }
-                } else {
-                    request.setAttribute("MSG_ERROR", "Email hoặc mật khẩu không đúng!");
-                    request.getRequestDispatcher(LOGIN_PAGE).forward(request, response);
-                }
-
-            // 2. ACTION: ĐĂNG KÝ (REGISTER)
-            } else if ("register".equals(action)) {
-                String fullName = request.getParameter("fullName");
-                String email = request.getParameter("email");
-                String password = request.getParameter("password");
-                String confirm = request.getParameter("confirm");
-
-                if (!password.equals(confirm)) {
-                    request.setAttribute("MSG_ERROR", "Mật khẩu xác nhận không khớp!");
-                    request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
-                    return;
-                }
-
-                if (userDao.checkEmailExist(email)) {
-                    request.setAttribute("MSG_ERROR", "Email này đã được sử dụng!");
-                    request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
-                } else {
-                    UserDTO newUser = new UserDTO();
-                    newUser.setUsername(fullName);
-                    newUser.setEmail(email);
-                    
-                    // BẢO MẬT: Băm mật khẩu trước khi lưu vào DB
-                    newUser.setPassword(PasswordUtil.hashPassword(password));
-                    
-                    newUser.setRoleId(4); // Mặc định: Customer
-                    newUser.setStatus(true);
-
-                    boolean isCreated = userDao.create(newUser);
-                    if (isCreated) {
-                        // Tự động tạo Giỏ hàng cho khách mới
-                        UserDTO createdUser = userDao.getUserByEmail(email);
-                        if (createdUser != null) {
-                            new CartDAO().create(new CartDTO(0, createdUser.getUserId(), null));
-                        }
-                        
-                        session.setAttribute("MSG_SUCCESS", "Đăng ký thành công! Hãy đăng nhập nhé.");
-                        response.sendRedirect(LOGIN_PAGE);
-                    }
-                }
-
-            // 3. ACTION: XEM THÔNG TIN CÁ NHÂN (PROFILE)
-            } else if ("profile".equals(action)) {
-                UserDTO loginUser = (UserDTO) session.getAttribute("LOGIN_USER");
-                if (loginUser == null) {
-                    response.sendRedirect(LOGIN_PAGE);
-                    return;
-                }
-                request.getRequestDispatcher(PROFILE_PAGE).forward(request, response);
-
-            // 4. ACTION: ĐĂNG XUẤT (LOGOUT)
-            } else if ("logout".equals(action)) {
-                session.invalidate(); // Xóa sạch session
-                response.sendRedirect("index.jsp");
+            switch (action) {
+                case "login":
+                    doLogin(request, response, session);
+                    break;
+                case "logout":
+                    doLogout(request, response, session);
+                    break;
+                case "register":
+                    doRegister(request, response, session);
+                    break;
+                case "profile":
+                    doProfile(request, response, session);
+                    break;
+                default:
+                    request.getRequestDispatcher(LOGIN_VIEW)
+                            .forward(request, response);
+                    break;
             }
-
         } catch (Exception e) {
             log("Error at UserController: " + e.toString());
-            response.sendRedirect("error-500.jsp");
+            request.getRequestDispatcher("/WEB-INF/views/web/error-500.jsp")
+                    .forward(request, response);
         }
+    }
+
+    // ----------------------------------------------------------------
+    // LOGIN
+    // ----------------------------------------------------------------
+    private void doLogin(HttpServletRequest request, HttpServletResponse response,
+            HttpSession session) throws ServletException, IOException {
+
+        if ("GET".equalsIgnoreCase(request.getMethod())) {
+            request.getRequestDispatcher(LOGIN_VIEW).forward(request, response);
+            return;
+        }
+
+        String email = request.getParameter("email");
+        String password = request.getParameter("password");
+
+        String hashedPassword = PasswordUtil.hashPassword(password);
+        UserDTO user = userDAO.login(email, hashedPassword);
+
+        if (user == null) {
+            request.setAttribute("MSG_ERROR",
+                    "Email hoặc mật khẩu không đúng, hoặc tài khoản đã bị khóa!");
+            request.getRequestDispatcher(LOGIN_VIEW).forward(request, response);
+            return;
+        }
+
+        session.setAttribute("LOGIN_USER", user);
+        session.setAttribute("MSG_SUCCESS", "Chào mừng " + user.getUsername() + "!");
+
+        // PHÂN LUỒNG ĐÚNG THEO ROLE THẬT
+        // roleId = 1 (Admin), 2 (Manager), 3 (Staff) -> Dashboard
+        // roleId = 4 (Customer) -> Trang chủ
+        if (user.getRoleId() == 1 || user.getRoleId() == 2 || user.getRoleId() == 3) {
+            response.sendRedirect("MainController?action=dashboard");
+        } else {
+            // roleId = 4 -> Customer
+            response.sendRedirect("MainController?action=home");
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // LOGOUT
+    // ----------------------------------------------------------------
+    private void doLogout(HttpServletRequest request, HttpServletResponse response,
+            HttpSession session) throws IOException {
+        session.invalidate();
+        response.sendRedirect("MainController?action=home");
+    }
+
+    // ----------------------------------------------------------------
+    // REGISTER
+    // ----------------------------------------------------------------
+    private void doRegister(HttpServletRequest request, HttpServletResponse response,
+            HttpSession session) throws ServletException, IOException {
+
+        if ("GET".equalsIgnoreCase(request.getMethod())) {
+            request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
+            return;
+        }
+
+        String fullName = request.getParameter("fullName");
+        String email = request.getParameter("email");
+        String password = request.getParameter("password");
+        String confirm = request.getParameter("confirm");
+
+        // Kiểm tra mật khẩu khớp
+        if (!password.equals(confirm)) {
+            request.setAttribute("MSG_ERROR", "Mật khẩu xác nhận không khớp!");
+            request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
+            return;
+        }
+
+        // Kiểm tra email đã tồn tại chưa
+        if (userDAO.checkEmailExist(email)) {
+            request.setAttribute("MSG_ERROR", "Email này đã được sử dụng!");
+            request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
+            return;
+        }
+
+        // Tạo user mới
+        UserDTO newUser = new UserDTO();
+        newUser.setUsername(fullName);
+        newUser.setEmail(email);
+        newUser.setPassword(PasswordUtil.hashPassword(password));
+        newUser.setRoleId(3); // 3 = Customer
+        newUser.setStatus(true);
+
+        boolean isCreated = userDAO.create(newUser);
+        if (isCreated) {
+            // Tự động tạo giỏ hàng cho user mới
+            UserDTO createdUser = userDAO.getUserByEmail(email);
+            if (createdUser != null) {
+                new CartDAO().create(new CartDTO(0, createdUser.getUserId(), null));
+            }
+            session.setAttribute("MSG_SUCCESS",
+                    "Đăng ký thành công! Hãy đăng nhập để mua sắm nhé.");
+            response.sendRedirect(LOGIN_URL);
+        } else {
+            request.setAttribute("MSG_ERROR", "Đăng ký thất bại, vui lòng thử lại!");
+            request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // PROFILE
+    // ----------------------------------------------------------------
+    private void doProfile(HttpServletRequest request, HttpServletResponse response,
+            HttpSession session) throws ServletException, IOException {
+
+        UserDTO loginUser = (UserDTO) session.getAttribute("LOGIN_USER");
+        if (loginUser == null) {
+            response.sendRedirect(LOGIN_URL);
+            return;
+        }
+        request.getRequestDispatcher(PROFILE_PAGE).forward(request, response);
     }
 
     @Override

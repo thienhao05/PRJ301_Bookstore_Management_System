@@ -11,8 +11,10 @@ import javax.servlet.http.HttpServletResponse;
 public class MainController extends HttpServlet {
 
     // 1. Khai báo hằng số để dễ quản lý tên Controller
-    private static final String ERROR = "error-404.jsp";
-    private static final String HOME = "BookController?action=viewBooks";
+    // Trang 404 nằm trong WEB-INF nên phải forward đúng path
+    private static final String ERROR = "/WEB-INF/views/web/error-404.jsp";
+    // Trang home cho khách -> BookController action=view
+    private static final String HOME = "BookController?action=view";
 
     private static final String USER = "UserController";
     private static final String BOOK = "BookController";
@@ -44,14 +46,16 @@ public class MainController extends HttpServlet {
                     || "register".equals(action) || "profile".equals(action)) {
                 url = USER;
             } // NHÓM B: SÁCH & KHO (Gộp chung cả khách xem và Admin quản lý)
-            else if ("viewBooks".equals(action) || "search".equals(action) || "detail".equals(action)
+            else if ("home".equals(action)
+                    || "viewBooks".equals(action) || "search".equals(action) || "detail".equals(action)
                     || "manageBooks".equals(action) || "addBook".equals(action)
                     || "editBook".equals(action) || "deleteBook".equals(action)) {
                 url = BOOK;
             } // NHÓM C: ĐƠN HÀNG (Checkout, Lịch sử, Quản lý đơn, Thống kê Dashboard)
             else if ("checkout".equals(action) || "history".equals(action) || "dashboard".equals(action)
                     || "manageOrders".equals(action) || "manageOrderDetail".equals(action)
-                    || "updateStatus".equals(action) || "update_status".equals(action)) {
+                    || "updateStatus".equals(action) || "update_status".equals(action)
+                    || "updateOrderStatus".equals(action)) {   // <-- THÊM DÒNG NÀY
                 url = ORDER;
             } // NHÓM D: TIN TỨC
             else if ("viewNews".equals(action) || "manageNews".equals(action) || "addNews".equals(action)

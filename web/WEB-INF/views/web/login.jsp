@@ -60,9 +60,9 @@
             <div class="row justify-content-center">
                 <div class="col-md-5 col-lg-4">
 
-                    <c:if test="${not empty requestScope.ERROR}">
+                    <c:if test="${not empty requestScope.MSG_ERROR}">
                         <div class="alert alert-danger border-0 shadow-sm mb-4 text-center small" role="alert">
-                            <i class="bi bi-exclamation-circle-fill me-2"></i> ${requestScope.ERROR}
+                            <i class="bi bi-exclamation-circle-fill me-2"></i> ${requestScope.MSG_ERROR}
                         </div>
                     </c:if>
 
@@ -80,9 +80,9 @@
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold text-muted">Tên đăng nhập</label>
                                     <div class="input-group">
-                                        <span class="input-group-text bg-light border-0"><i class="bi bi-person text-muted"></i></span>
-                                        <input type="text" name="username" class="form-control bg-light border-0" 
-                                               placeholder="Nhập username" required autofocus>
+                                        <span class="input-group-text bg-light border-0"><i class="bi bi-envelope text-muted"></i></span>
+                                        <input type="email" name="email" class="form-control bg-light border-0" 
+                                               placeholder="Nhập email" required autofocus>
                                     </div>
                                 </div>
 

@@ -89,7 +89,7 @@ public class PublisherController extends HttpServlet {
 
         } catch (Exception e) {
             log("Error at PublisherController: " + e.toString());
-            response.sendRedirect("error-500.jsp");
+            request.getRequestDispatcher("/WEB-INF/views/web/error-500.jsp").forward(request, response);
         }
     }
 

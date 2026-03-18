@@ -96,16 +96,19 @@ public class OrderController extends HttpServlet {
                 request.getRequestDispatcher("order-history.jsp").forward(request, response);
             } // 3. THỐNG KÊ DASHBOARD (CHO ADMIN)
             else if ("dashboard".equals(action)) {
-                if (user.getRoleId() == 1) {
+                // Admin(1), Manager(2), Staff(3) đều được vào dashboard
+                if (user.getRoleId() == 1 || user.getRoleId() == 2 || user.getRoleId() == 3) {
                     Map<String, Object> stats = orderDao.getDashboardStats();
                     request.setAttribute("TOTAL_REVENUE", stats.get("TOTAL_REVENUE"));
                     request.setAttribute("TOTAL_ORDERS", stats.get("TOTAL_ORDERS"));
                     request.setAttribute("TOTAL_USERS", stats.get("TOTAL_USERS"));
                     request.setAttribute("TOTAL_BOOKS", stats.get("TOTAL_BOOKS"));
                     request.setAttribute("RECENT_ORDERS", stats.get("RECENT_ORDERS"));
-                    request.getRequestDispatcher("admin/dashboard.jsp").forward(request, response);
+                    request.getRequestDispatcher("/WEB-INF/views/admin/dashboard.jsp")
+                            .forward(request, response);
                 } else {
-                    response.sendRedirect("error-403.jsp");
+                    // Customer không được vào dashboard
+                    response.sendRedirect("MainController?action=home");
                 }
             } // 4. QUẢN LÝ DANH SÁCH ĐƠN HÀNG (CHO ADMIN)
             else if ("manageOrders".equals(action)) {
@@ -124,19 +127,25 @@ public class OrderController extends HttpServlet {
                 request.setAttribute("DETAILS", details);
                 request.getRequestDispatcher("admin/admin-order-detail.jsp").forward(request, response);
             } // 6. CẬP NHẬT TRẠNG THÁI
-            else if ("updateStatus".equals(action)) {
+            else if ("updateStatus".equals(action) || "updateOrderStatus".equals(action)) {
                 int orderId = Integer.parseInt(request.getParameter("orderId"));
-                String status = request.getParameter("status");
+                String newStatus = request.getParameter("newStatus");   // JSP dùng "newStatus"
+                if (newStatus == null) {
+                    newStatus = request.getParameter("status");         // fallback "status"
+                }
 
-                if (orderDao.updateStatus(orderId, status)) {
-                    session.setAttribute("MSG_SUCCESS", "Đã cập nhật đơn hàng #" + orderId);
+                if (orderDao.updateStatus(orderId, newStatus)) {
+                    session.setAttribute("MSG_SUCCESS",
+                            "Đã cập nhật trạng thái đơn hàng #" + orderId);
+                } else {
+                    session.setAttribute("MSG_ERROR", "Cập nhật thất bại!");
                 }
                 response.sendRedirect("MainController?action=manageOrderDetail&id=" + orderId);
             }
 
         } catch (Exception e) {
             log("Error at OrderController: " + e.toString());
-            response.sendRedirect("error-500.jsp");
+            request.getRequestDispatcher("/WEB-INF/views/web/error-500.jsp").forward(request, response);
         }
     }
 
