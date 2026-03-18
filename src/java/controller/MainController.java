@@ -43,8 +43,9 @@ public class MainController extends HttpServlet {
             } // 2. PHÂN LUỒNG THEO NHÓM (DOMAIN)
             // NHÓM A: TÀI KHOẢN & NGƯỜI DÙNG
             else if ("login".equals(action) || "logout".equals(action)
-                    || "register".equals(action) // <-- đã có chưa?
-                    || "profile".equals(action)) {
+                    || "register".equals(action) || "profile".equals(action)
+                    || "forgotPassword".equals(action) // <-- THÊM
+                    || "resetPassword".equals(action)) {  // <-- THÊM
                 url = USER;
             } // NHÓM B: SÁCH & KHO (Gộp chung cả khách xem và Admin quản lý)
             else if ("home".equals(action)

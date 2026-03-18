@@ -48,6 +48,12 @@ public class UserController extends HttpServlet {
                 case "profile":
                     doProfile(request, response, session);
                     break;
+                case "forgotPassword":
+                    doForgotPassword(request, response); // THÊM
+                    break;
+                case "resetPassword":
+                    doResetPassword(request, response);  // THÊM
+                    break;
                 default:
                     request.getRequestDispatcher(LOGIN_VIEW)
                             .forward(request, response);
@@ -184,6 +190,82 @@ public class UserController extends HttpServlet {
             return;
         }
         request.getRequestDispatcher(PROFILE_PAGE).forward(request, response);
+    }
+
+    private static final String FORGOT_PASSWORD_PAGE = "/WEB-INF/views/web/forgot-password.jsp";
+
+// ----------------------------------------------------------------
+// FORGOT PASSWORD - Hiện form nhập email + mật khẩu mới
+// ----------------------------------------------------------------
+    private void doForgotPassword(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        if ("GET".equalsIgnoreCase(request.getMethod())) {
+            request.getRequestDispatcher(FORGOT_PASSWORD_PAGE).forward(request, response);
+            return;
+        }
+
+        // POST -> chuyển sang resetPassword
+        response.sendRedirect("MainController?action=forgotPassword");
+    }
+
+// ----------------------------------------------------------------
+// RESET PASSWORD - Xử lý đặt lại mật khẩu
+// ----------------------------------------------------------------
+    private void doResetPassword(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String email = request.getParameter("email");
+        String newPassword = request.getParameter("newPassword");
+        String confirm = request.getParameter("confirm");
+
+        // Validate
+        if (email == null || email.trim().isEmpty()) {
+            request.setAttribute("MSG_ERROR", "Vui lòng nhập email!");
+            request.getRequestDispatcher(FORGOT_PASSWORD_PAGE).forward(request, response);
+            return;
+        }
+
+        // Kiểm tra email có tồn tại không
+        if (!userDAO.checkEmailExist(email)) {
+            request.setAttribute("MSG_ERROR", "Email này không tồn tại trong hệ thống!");
+            request.getRequestDispatcher(FORGOT_PASSWORD_PAGE).forward(request, response);
+            return;
+        }
+
+        if (newPassword == null || newPassword.length() < 6) {
+            request.setAttribute("MSG_ERROR", "Mật khẩu mới phải có ít nhất 6 ký tự!");
+            request.getRequestDispatcher(FORGOT_PASSWORD_PAGE).forward(request, response);
+            return;
+        }
+
+        if (!newPassword.equals(confirm)) {
+            request.setAttribute("MSG_ERROR", "Mật khẩu xác nhận không khớp!");
+            request.getRequestDispatcher(FORGOT_PASSWORD_PAGE).forward(request, response);
+            return;
+        }
+
+        // Lấy user theo email
+        UserDTO user = userDAO.getUserByEmail(email);
+        if (user == null) {
+            request.setAttribute("MSG_ERROR", "Không tìm thấy tài khoản!");
+            request.getRequestDispatcher(FORGOT_PASSWORD_PAGE).forward(request, response);
+            return;
+        }
+
+        // Cập nhật mật khẩu mới
+        user.setPassword(PasswordUtil.hashPassword(newPassword));
+        boolean isUpdated = userDAO.update(user);
+
+        if (isUpdated) {
+            HttpSession session = request.getSession();
+            session.setAttribute("MSG_SUCCESS",
+                    "Đặt lại mật khẩu thành công! Hãy đăng nhập với mật khẩu mới.");
+            response.sendRedirect("MainController?action=login");
+        } else {
+            request.setAttribute("MSG_ERROR", "Có lỗi xảy ra, vui lòng thử lại!");
+            request.getRequestDispatcher(FORGOT_PASSWORD_PAGE).forward(request, response);
+        }
     }
 
     @Override
