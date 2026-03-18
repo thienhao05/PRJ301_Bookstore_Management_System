@@ -66,10 +66,15 @@ public class MainController extends HttpServlet {
                     || "updateOrderStatus".equals(action)) {   // <-- THÊM DÒNG NÀY
                 url = ORDER;
             } // NHÓM D: TIN TỨC
-            else if ("viewNews".equals(action) || "manageNews".equals(action) || "addNews".equals(action)
-                    || "editNews".equals(action) || "updateNews".equals(action) || "deleteNews".equals(action)) {
+            else if ("viewNews".equals(action)
+                    || "newsDetail".equals(action)
+                    || "manageNews".equals(action)
+                    || "addNews".equals(action)
+                    || "editNews".equals(action)
+                    || "updateNews".equals(action)
+                    || "deleteNews".equals(action)) {
                 url = NEWS;
-            } // NHÓM E: CÁC CHỨC NĂNG KHÁC (Giỏ hàng, Thanh toán, Địa chỉ...)
+            }// NHÓM E: CÁC CHỨC NĂNG KHÁC (Giỏ hàng, Thanh toán, Địa chỉ...)
             else if (action.contains("Cart") || "addToCart".equals(action)
                     || "removeFromCart".equals(action) || "updateCartQuantity".equals(action)
                     || "viewCart".equals(action) || "clearCart".equals(action)) {
