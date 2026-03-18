@@ -86,7 +86,18 @@
                     <small class="text-muted">Quản lý nhập xuất và thông tin sách trong kho</small>
                 </div>
                 <div class="text-end">
-                    <div class="mb-2">Chào, <strong>${sessionScope.LOGIN_USER.fullName}</strong></div>
+                    <c:choose>
+                        <c:when test="${not empty sessionScope.LOGIN_USER}">
+                            <div class="mb-2">
+                                Chào, <strong>${sessionScope.LOGIN_USER.fullName}</strong>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="mb-2">
+                                <a href="MainController?action=login">Đăng nhập</a>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
                     <button class="btn btn-primary shadow-sm px-4" data-bs-toggle="modal" data-bs-target="#addBookModal">
                         <i class="bi bi-plus-lg me-1"></i> Nhập Sách Mới
                     </button>
@@ -220,7 +231,7 @@
 
         <div class="card-footer bg-white border-0 pb-4">
             <c:set var="targetAction" value="manageBooks" scope="request"/>
-            <%@include file="pagination.jsp" %>
+           
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

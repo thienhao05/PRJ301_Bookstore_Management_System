@@ -19,16 +19,21 @@ public class DiscountController extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        
-        String action = request.getParameter("action");
+
+        // ✅ Đọc action từ attribute (do MainController set) hoặc parameter
+        String action = (String) request.getAttribute("action");
+        if (action == null) {
+            action = request.getParameter("action");
+        }
+
         DiscountDAO dao = new DiscountDAO();
         HttpSession session = request.getSession();
 
-        // BẢO MẬT: Chỉ Admin (1) hoặc Manager (2) mới được quản lý mã giảm giá
+        // Kiểm tra quyền: chỉ Admin (1) hoặc Manager (2)
         UserDTO loginUser = (UserDTO) session.getAttribute("LOGIN_USER");
         if (loginUser == null || (loginUser.getRoleId() != 1 && loginUser.getRoleId() != 2)) {
             session.setAttribute("MSG_ERROR", "Bạn không có quyền quản lý mã giảm giá!");
-            response.sendRedirect("login.jsp");
+            response.sendRedirect("MainController?action=login");
             return;
         }
 
@@ -36,10 +41,9 @@ public class DiscountController extends HttpServlet {
             if (action == null || action.equals("list")) {
                 List<DiscountDTO> list = dao.readAll();
                 request.setAttribute("DISCOUNT_LIST", list);
-                request.getRequestDispatcher("admin/manage-discounts.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/admin/manage-discounts.jsp").forward(request, response);
 
             } else if (action.equals("add")) {
-                // 1. THÊM MỚI MÃ
                 String code = request.getParameter("code");
                 int percentage = Integer.parseInt(request.getParameter("percentage"));
                 String startDate = request.getParameter("startDate");
@@ -47,46 +51,43 @@ public class DiscountController extends HttpServlet {
 
                 DiscountDTO dto = new DiscountDTO();
                 dto.setCode(code);
-                dto.setDiscount_percent(percentage); // Khớp với DTO
-                dto.setStart_date(Date.valueOf(startDate)); // Khớp với DTO
-                dto.setEnd_date(Date.valueOf(endDate)); // Khớp với DTO
-                dto.setStatus("Active"); // DTO dùng String
+                dto.setDiscount_percent(percentage);
+                dto.setStart_date(Date.valueOf(startDate));
+                dto.setEnd_date(Date.valueOf(endDate));
+                dto.setStatus("Active");
 
                 if (dao.create(dto)) {
                     session.setAttribute("MSG_SUCCESS", "Tạo mã giảm giá mới thành công!");
                 } else {
                     session.setAttribute("MSG_ERROR", "Mã này đã tồn tại hoặc lỗi hệ thống.");
                 }
-                response.sendRedirect("DiscountController?action=list");
+                response.sendRedirect("MainController?action=manageDiscounts");
 
             } else if (action.equals("edit")) {
                 int id = Integer.parseInt(request.getParameter("id"));
                 DiscountDTO discount = dao.readById(id);
                 if (discount != null) {
                     request.setAttribute("DISCOUNT_DETAIL", discount);
-                    request.getRequestDispatcher("admin/edit-discount.jsp").forward(request, response);
+                    request.getRequestDispatcher("/WEB-INF/views/admin/edit-discount.jsp").forward(request, response);
                 }
 
             } else if (action.equals("update")) {
-                // 2. CẬP NHẬT MÃ
                 int id = Integer.parseInt(request.getParameter("id"));
                 String code = request.getParameter("code");
                 int percentage = Integer.parseInt(request.getParameter("percentage"));
                 String startDate = request.getParameter("startDate");
                 String endDate = request.getParameter("endDate");
-                // Lấy status từ form (ví dụ: Active/Inactive)
-                String status = request.getParameter("status"); 
+                String status = request.getParameter("status");
 
-                // Sử dụng đúng constructor 6 tham số của NewsDTO bạn gửi
-                DiscountDTO dto = new DiscountDTO(id, code, percentage, 
+                DiscountDTO dto = new DiscountDTO(id, code, percentage,
                         Date.valueOf(startDate), Date.valueOf(endDate), status);
-                
+
                 if (dao.update(dto)) {
                     session.setAttribute("MSG_SUCCESS", "Cập nhật mã thành công!");
                 } else {
                     session.setAttribute("MSG_ERROR", "Cập nhật thất bại.");
                 }
-                response.sendRedirect("DiscountController?action=list");
+                response.sendRedirect("MainController?action=manageDiscounts");
 
             } else if (action.equals("delete")) {
                 int id = Integer.parseInt(request.getParameter("id"));
@@ -95,9 +96,9 @@ public class DiscountController extends HttpServlet {
                 } else {
                     session.setAttribute("MSG_ERROR", "Không thể xóa mã đã được sử dụng.");
                 }
-                response.sendRedirect("DiscountController?action=list");
+                response.sendRedirect("MainController?action=manageDiscounts");
             }
-            
+
         } catch (Exception e) {
             log("Error at DiscountController: " + e.toString());
             request.getRequestDispatcher("/WEB-INF/views/web/error-500.jsp").forward(request, response);

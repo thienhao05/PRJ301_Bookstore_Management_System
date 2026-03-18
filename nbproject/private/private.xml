@@ -3,6 +3,7 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+<<<<<<< Updated upstream
             <file>file:/E:/Repository/PRJ301_Bookstore_Management_System/src/java/dao/OrderDAO.java</file>
             <file>file:/E:/Repository/PRJ301_Bookstore_Management_System/web/WEB-INF/views/admin/send-notification.jsp</file>
             <file>file:/E:/Repository/PRJ301_Bookstore_Management_System/web/WEB-INF/views/components/admin-header.jsp</file>
@@ -110,6 +111,12 @@
             <file>file:/E:/Repository/PRJ301_Bookstore_Management_System/src/java/dto/ShippingProviderDTO.java</file>
             <file>file:/E:/Repository/PRJ301_Bookstore_Management_System/web/WEB-INF/views/user/my-order-detail.jsp</file>
             <file>file:/E:/Repository/PRJ301_Bookstore_Management_System/src/java/controller/AddressController.java</file>
+=======
+            <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/controller/BookController.java</file>
+            <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/nbproject/build-impl.xml</file>
+            <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/controller/AddressController.java</file>
+            <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/filter/EncodingFilter.java</file>
+>>>>>>> Stashed changes
         </group>
     </open-files>
 </project-private>
