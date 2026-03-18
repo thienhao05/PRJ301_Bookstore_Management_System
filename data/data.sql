@@ -551,3 +551,6 @@ GO
 --drop table Enrollments
 
 --drop table courses
+
+UPDATE Users SET password_hash = '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92'
+WHERE user_id IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20);

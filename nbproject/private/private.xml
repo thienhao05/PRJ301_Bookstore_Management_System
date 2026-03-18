@@ -15,6 +15,7 @@
             <file>file:/E:/Repository/PRJ301_Bookstore_Management_System/src/java/dto/DiscountDTO.java</file>
             <file>file:/E:/Repository/PRJ301_Bookstore_Management_System/src/java/controller/NotificationController.java</file>
             <file>file:/E:/Repository/PRJ301_Bookstore_Management_System/src/java/dto/BookDTO.java</file>
+            <file>file:/E:/Repository/PRJ301_Bookstore_Management_System/src/java/filter/EncodingFilter.java</file>
             <file>file:/E:/Repository/PRJ301_Bookstore_Management_System/web/WEB-INF/views/user/notifications.jsp</file>
             <file>file:/E:/Repository/PRJ301_Bookstore_Management_System/src/java/controller/ReviewController.java</file>
             <file>file:/E:/Repository/PRJ301_Bookstore_Management_System/src/java/controller/StaffController.java</file>

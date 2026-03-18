@@ -15,19 +15,21 @@ import javax.servlet.http.HttpSession;
 @WebServlet(name = "NewsController", urlPatterns = {"/NewsController"})
 public class NewsController extends HttpServlet {
 
-    private static final String NEWS_PAGE        = "/WEB-INF/views/web/news.jsp";
+    private static final String NEWS_PAGE = "/WEB-INF/views/web/news.jsp";
     private static final String NEWS_DETAIL_PAGE = "/WEB-INF/views/web/news-detail.jsp";
-    private static final String MANAGE_NEWS      = "/WEB-INF/views/admin/manage-news.jsp";
-    private static final String EDIT_NEWS        = "/WEB-INF/views/admin/edit-news.jsp";
-    private static final String ERROR_404        = "/WEB-INF/views/web/error-404.jsp";
-    private static final String ERROR_500        = "/WEB-INF/views/web/error-500.jsp";
+    private static final String MANAGE_NEWS = "/WEB-INF/views/admin/manage-news.jsp";
+    private static final String EDIT_NEWS = "/WEB-INF/views/admin/edit-news.jsp";
+    private static final String ERROR_404 = "/WEB-INF/views/web/error-404.jsp";
+    private static final String ERROR_500 = "/WEB-INF/views/web/error-500.jsp";
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
 
         String action = request.getParameter("action");
-        if (action == null) action = "viewNews";
+        if (action == null) {
+            action = "viewNews";
+        }
 
         NewsDAO newsDao = new NewsDAO();
         HttpSession session = request.getSession();
@@ -38,7 +40,6 @@ public class NewsController extends HttpServlet {
                 // ================================================
                 // DÀNH CHO TẤT CẢ
                 // ================================================
-
                 case "viewNews": {
                     List<NewsDTO> list = newsDao.readAll();
                     request.setAttribute("NEWS_LIST", list);
@@ -65,7 +66,7 @@ public class NewsController extends HttpServlet {
                         request.setAttribute("NEWS_DETAIL", news);
                         request.setAttribute("RELATED_NEWS", recentList);
                         request.getRequestDispatcher(NEWS_DETAIL_PAGE)
-                               .forward(request, response);
+                                .forward(request, response);
                     } else {
                         request.getRequestDispatcher(ERROR_404).forward(request, response);
                     }
@@ -75,7 +76,6 @@ public class NewsController extends HttpServlet {
                 // ================================================
                 // DÀNH CHO ADMIN / MANAGER / STAFF
                 // ================================================
-
                 case "manageNews": {
                     if (!hasAdminAccess(session)) {
                         response.sendRedirect("MainController?action=login");
@@ -92,7 +92,7 @@ public class NewsController extends HttpServlet {
                         response.sendRedirect("MainController?action=login");
                         return;
                     }
-                    String title   = request.getParameter("title");
+                    String title = request.getParameter("title");
                     String content = request.getParameter("content");
 
                     UserDTO loginUser = (UserDTO) session.getAttribute("LOGIN_USER");
@@ -132,8 +132,8 @@ public class NewsController extends HttpServlet {
                         response.sendRedirect("MainController?action=login");
                         return;
                     }
-                    int id         = Integer.parseInt(request.getParameter("id"));
-                    String title   = request.getParameter("title");
+                    int id = Integer.parseInt(request.getParameter("id"));
+                    String title = request.getParameter("title");
                     String content = request.getParameter("content");
 
                     NewsDTO dto = newsDao.readById(id);
@@ -155,7 +155,27 @@ public class NewsController extends HttpServlet {
                         response.sendRedirect("MainController?action=login");
                         return;
                     }
+
                     int id = Integer.parseInt(request.getParameter("id"));
+                    UserDTO loginUser = (UserDTO) session.getAttribute("LOGIN_USER");
+                    NewsDTO news = newsDao.readById(id);
+
+                    if (news == null) {
+                        session.setAttribute("MSG_ERROR", "Bài viết không tồn tại!");
+                        response.sendRedirect("MainController?action=manageNews");
+                        return;
+                    }
+
+                    // Staff (role 3) chỉ được xóa tin của mình
+                    // Admin (1) và Manager (2) xóa được tất cả
+                    if (loginUser.getRoleId() == 3
+                            && news.getStaff_id() != loginUser.getUserId()) {
+                        session.setAttribute("MSG_ERROR",
+                                "Bạn chỉ được xóa bài viết do chính mình đăng!");
+                        response.sendRedirect("MainController?action=manageNews");
+                        return;
+                    }
+
                     if (newsDao.delete(id)) {
                         session.setAttribute("MSG_SUCCESS", "Đã xóa bài viết.");
                     } else {
@@ -178,7 +198,9 @@ public class NewsController extends HttpServlet {
     // ---- Helper: kiểm tra quyền admin/manager/staff ----
     private boolean hasAdminAccess(HttpSession session) {
         UserDTO user = (UserDTO) session.getAttribute("LOGIN_USER");
-        if (user == null) return false;
+        if (user == null) {
+            return false;
+        }
         int role = user.getRoleId();
         return role == 1 || role == 2 || role == 3;
     }
