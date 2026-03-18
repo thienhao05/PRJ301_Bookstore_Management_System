@@ -107,9 +107,6 @@ public class UserController extends HttpServlet {
         response.sendRedirect("MainController?action=home");
     }
 
-    // ----------------------------------------------------------------
-    // REGISTER
-    // ----------------------------------------------------------------
     private void doRegister(HttpServletRequest request, HttpServletResponse response,
             HttpSession session) throws ServletException, IOException {
 
@@ -120,34 +117,48 @@ public class UserController extends HttpServlet {
 
         String fullName = request.getParameter("fullName");
         String email = request.getParameter("email");
+        String phone = request.getParameter("phone");
         String password = request.getParameter("password");
-        String confirm = request.getParameter("confirm");
+        String confirm = request.getParameter("confirm"); // khớp với name="confirm" trong form
 
-        // Kiểm tra mật khẩu khớp
+        // Debug tạm - xóa sau khi fix xong
+        log("DEBUG register - password: " + password + ", confirm: " + confirm);
+
+        // Validate null
+        if (password == null || confirm == null) {
+            request.setAttribute("MSG_ERROR", "Vui lòng nhập đầy đủ thông tin!");
+            request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
+            return;
+        }
+
+        if (password.length() < 6) {
+            request.setAttribute("MSG_ERROR", "Mật khẩu phải có ít nhất 6 ký tự!");
+            request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
+            return;
+        }
+
         if (!password.equals(confirm)) {
             request.setAttribute("MSG_ERROR", "Mật khẩu xác nhận không khớp!");
             request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
             return;
         }
 
-        // Kiểm tra email đã tồn tại chưa
         if (userDAO.checkEmailExist(email)) {
             request.setAttribute("MSG_ERROR", "Email này đã được sử dụng!");
             request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
             return;
         }
 
-        // Tạo user mới
         UserDTO newUser = new UserDTO();
         newUser.setUsername(fullName);
         newUser.setEmail(email);
+        newUser.setPhone(phone);
         newUser.setPassword(PasswordUtil.hashPassword(password));
-        newUser.setRoleId(3); // 3 = Customer
+        newUser.setRoleId(4); // Customer
         newUser.setStatus(true);
 
         boolean isCreated = userDAO.create(newUser);
         if (isCreated) {
-            // Tự động tạo giỏ hàng cho user mới
             UserDTO createdUser = userDAO.getUserByEmail(email);
             if (createdUser != null) {
                 new CartDAO().create(new CartDTO(0, createdUser.getUserId(), null));

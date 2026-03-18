@@ -89,12 +89,12 @@
                                 <div class="mb-4">
                                     <label class="form-label small fw-bold text-muted d-flex justify-content-between">
                                         Mật khẩu
-                                        <a href="forgot-password.jsp" class="text-decoration-none fw-normal">Quên mật khẩu?</a>
+                                       <a href="MainController?action=forgotPassword">Quên mật khẩu?</a>
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light border-0"><i class="bi bi-lock text-muted"></i></span>
                                         <input type="password" name="password" class="form-control bg-light border-0" 
-                                               placeholder="••••••••" required>
+                                               placeholder="Nhập password" required>
                                     </div>
                                 </div>
 
@@ -106,7 +106,7 @@
 
                                 <div class="text-center mt-4">
                                     <p class="small text-muted mb-0">Chưa có tài khoản?</p>
-                                    <a href="register.jsp" class="fw-bold text-decoration-none">Đăng ký thành viên</a>
+                                    <a href="MainController?action=register">Đăng ký thành viên</a>
                                 </div>
                             </form>
                         </div>

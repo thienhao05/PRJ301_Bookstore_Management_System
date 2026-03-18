@@ -43,13 +43,20 @@ public class MainController extends HttpServlet {
             } // 2. PHÂN LUỒNG THEO NHÓM (DOMAIN)
             // NHÓM A: TÀI KHOẢN & NGƯỜI DÙNG
             else if ("login".equals(action) || "logout".equals(action)
-                    || "register".equals(action) || "profile".equals(action)) {
+                    || "register".equals(action) // <-- đã có chưa?
+                    || "profile".equals(action)) {
                 url = USER;
             } // NHÓM B: SÁCH & KHO (Gộp chung cả khách xem và Admin quản lý)
             else if ("home".equals(action)
-                    || "viewBooks".equals(action) || "search".equals(action) || "detail".equals(action)
-                    || "manageBooks".equals(action) || "addBook".equals(action)
-                    || "editBook".equals(action) || "deleteBook".equals(action)) {
+                    || "view".equals(action) // <-- THÊM DÒNG NÀY
+                    || "viewBooks".equals(action)
+                    || "search".equals(action)
+                    || "detail".equals(action)
+                    || "bookDetail".equals(action) // <-- THÊM LUÔN bookDetail
+                    || "manageBooks".equals(action)
+                    || "addBook".equals(action)
+                    || "editBook".equals(action)
+                    || "deleteBook".equals(action)) {
                 url = BOOK;
             } // NHÓM C: ĐƠN HÀNG (Checkout, Lịch sử, Quản lý đơn, Thống kê Dashboard)
             else if ("checkout".equals(action) || "history".equals(action) || "dashboard".equals(action)
@@ -62,7 +69,9 @@ public class MainController extends HttpServlet {
                     || "editNews".equals(action) || "updateNews".equals(action) || "deleteNews".equals(action)) {
                 url = NEWS;
             } // NHÓM E: CÁC CHỨC NĂNG KHÁC (Giỏ hàng, Thanh toán, Địa chỉ...)
-            else if (action.contains("Cart")) {
+            else if (action.contains("Cart") || "addToCart".equals(action)
+                    || "removeFromCart".equals(action) || "updateCartQuantity".equals(action)
+                    || "viewCart".equals(action) || "clearCart".equals(action)) {
                 url = CART;
             } else if (action.contains("Category")) {
                 url = CATEGORY;
