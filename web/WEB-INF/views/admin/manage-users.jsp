@@ -130,7 +130,7 @@
                 </div>
             </div>
         </div>
-
+  
         <div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <form action="MainController" method="POST" class="modal-content border-0 shadow-lg">

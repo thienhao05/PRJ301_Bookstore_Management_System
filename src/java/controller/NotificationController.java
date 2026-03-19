@@ -18,72 +18,69 @@ public class NotificationController extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        
-        // Lấy action từ request hoặc từ attribute do MainController map qua
+
         String action = request.getParameter("action");
-        if (action == null) {
-            action = (String) request.getAttribute("action");
-        }
-        
+        if (action == null) action = (String) request.getAttribute("action");
+
         NotificationDAO dao = new NotificationDAO();
         HttpSession session = request.getSession();
         UserDTO user = (UserDTO) session.getAttribute("LOGIN_USER");
-        String url = "error-404.jsp";
 
         try {
-            // TRƯỜNG HỢP 1: Hiển thị trang Form gửi thông báo (Sửa lỗi trắng màn)
-            if ("viewSendPage".equals(action)) {
-                url = "send-notification.jsp"; 
-                request.getRequestDispatcher(url).forward(request, response);
-                return;
-            }
-
-            // TRƯỜNG HỢP 2: Xử lý khi nhấn nút "Phát hành thông báo"
-            if ("sendNotification".equals(action)) {
-                String title = request.getParameter("title");
+            // Trang gửi thông báo (Admin/Manager)
+            if ("sendNotification".equals(action) || "viewSendPage".equals(action)) {
+                if (user == null || (user.getRoleId() != 1 && user.getRoleId() != 2)) {
+                    response.sendRedirect("MainController?action=login"); // ✅ SỬA
+                    return;
+                }
+                if ("GET".equalsIgnoreCase(request.getMethod()) || "viewSendPage".equals(action)) {
+                    request.getRequestDispatcher("/WEB-INF/views/admin/send-notification.jsp").forward(request, response); // ✅ SỬA path
+                    return;
+                }
+                // POST: xử lý gửi
+                String title   = request.getParameter("title");
                 String content = request.getParameter("content");
-                String target = request.getParameter("targetUser");
-                
+                String target  = request.getParameter("targetUser");
+
                 NotificationDTO noti = new NotificationDTO();
                 noti.setContent("[" + title + "] " + content);
-                
+
                 if ("all".equals(target)) {
-                    // Logic gửi cho tất cả (giả sử user_id 0 là broadcast hoặc lặp list)
-                    noti.setUser_id(0); 
+                    noti.setUser_id(0);
                 } else {
                     int receiverId = Integer.parseInt(request.getParameter("receiverId"));
                     noti.setUser_id(receiverId);
                 }
-                
+
                 if (dao.create(noti)) {
                     session.setAttribute("MSG_SUCCESS", "Đã gửi thông báo thành công!");
+                } else {
+                    session.setAttribute("MSG_ERROR", "Gửi thông báo thất bại!");
                 }
                 response.sendRedirect("MainController?action=sendNotification");
                 return;
             }
 
-            // CÁC TRƯỜNG HỢP CŨ CỦA BẠN
+            // Xem thông báo của user
             if (user == null) {
-                response.sendRedirect("login.jsp");
+                response.sendRedirect("MainController?action=login"); // ✅ SỬA
                 return;
             }
 
-            if (action == null || action.equals("list")) {
+            if (action == null || "list".equals(action) || "viewNoti".equals(action)) {
                 List<NotificationDTO> list = dao.getNotificationsByUserId(user.getUserId());
                 request.setAttribute("NOTI_LIST", list);
-                url = "WEB-INF/views/user/notifications.jsp";
-            } else if (action.equals("markRead")) {
+                request.getRequestDispatcher("/WEB-INF/views/user/notifications.jsp").forward(request, response); // ✅ SỬA path
+
+            } else if ("markRead".equals(action)) {
                 int notiId = Integer.parseInt(request.getParameter("notiId"));
                 dao.markAsRead(notiId);
-                url = "NotificationController?action=list";
-                response.sendRedirect(url); return;
+                response.sendRedirect("MainController?action=viewNoti");
             }
-            
-            request.getRequestDispatcher(url).forward(request, response);
 
         } catch (Exception e) {
             log("Error at NotificationController: " + e.toString());
-            response.sendRedirect("error-500.jsp");
+            request.getRequestDispatcher("/WEB-INF/views/web/error-500.jsp").forward(request, response); // ✅ SỬA path
         }
     }
 

@@ -4,6 +4,8 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/web/WEB-INF/web.xml</file>
+            <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/dao/CartDAO.java</file>
+            <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/controller/OrderController.java</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/dao/ShiftDAO.java</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/web/WEB-INF/views/admin/manage-categories.jsp</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/web/WEB-INF/views/web/register.jsp</file>
@@ -16,6 +18,7 @@
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/controller/ReviewController.java</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/controller/DiscountController.java</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/controller/WishlistController.java</file>
+            <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/dao/OrderDetailDAO.java</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/web/WEB-INF/views/admin/dashboard.jsp</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/controller/CategoryController.java</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/web/WEB-INF/views/admin/admin-order-detail.jsp</file>
@@ -34,6 +37,7 @@
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/controller/CartController.java</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/web/WEB-INF/views/web/news.jsp</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/controller/UserController.java</file>
+            <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/dao/OrderDAO.java</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/controller/MainController.java</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/web/WEB-INF/views/admin/manage-publishers.jsp</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/controller/NewsController.java</file>
@@ -41,6 +45,7 @@
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/controller/ShiftController.java</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/web/WEB-INF/views/admin/manage-discounts.jsp</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/web/WEB-INF/views/admin/manage-shipping.jsp</file>
+            <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/dao/RoleDAO.java</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/web/WEB-INF/views/admin/manage-roles.jsp</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/controller/BookController.java</file>
             <file>file:/D:/FPT/KI4_SP26/PRJ301/PRJ301_Bookstore_Management_System/src/java/dto/UserDTO.java</file>
