@@ -1,0 +1,160 @@
+/* Project: Bookstore Management System
+    Author: Hao (FPT University Student)
+    Description: Global styles for Admin & Staff areas
+*/
+
+:root {
+    --sidebar-width: 260px;
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --dark-bg: #212529;
+    --light-bg: #f4f7f6;
+    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --transition-speed: 0.3s;
+}
+
+body {
+    background-color: var(--light-bg);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    overflow-x: hidden;
+}
+
+/* --- SIDEBAR STYLES --- */
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: var(--dark-bg);
+    color: white;
+    padding-top: 20px;
+    z-index: 1000;
+    transition: var(--transition-speed);
+}
+
+.sidebar .nav-link {
+    color: #adb5bd;
+    padding: 12px 20px;
+    margin: 4px 15px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    transition: var(--transition-speed);
+}
+
+.sidebar .nav-link i {
+    font-size: 1.1rem;
+    width: 25px;
+}
+
+.sidebar .nav-link:hover, 
+.sidebar .nav-link.active {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .nav-link.active {
+    background: var(--primary-color);
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+}
+
+/* --- MAIN CONTENT AREA --- */
+.main-content {
+    margin-left: var(--sidebar-width);
+    padding: 30px;
+    min-height: 100vh;
+    transition: var(--transition-speed);
+}
+
+/* --- CARDS & BOXES --- */
+.stat-card {
+    border: none;
+    border-radius: 15px;
+    padding: 20px;
+    color: white;
+    transition: transform var(--transition-speed);
+    box-shadow: var(--card-shadow);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.order-card, .admin-card {
+    border: none;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: var(--card-shadow);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* --- DATA TABLES --- */
+.table-container {
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+}
+
+.table thead {
+    background-color: #f8f9fa;
+}
+
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    border-top: none;
+    padding: 15px;
+}
+
+.table td {
+    padding: 15px;
+    vertical-align: middle;
+}
+
+/* --- BADGES & STATUS --- */
+.badge-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+/* --- FORMS IN ADMIN --- */
+.form-control, .form-select {
+    border-radius: 8px;
+    padding: 10px 15px;
+    border: 1px solid #dee2e6;
+    transition: 0.2s;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    border-color: var(--primary-color);
+}
+
+/* --- BUTTONS --- */
+.btn-admin {
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-weight: 600;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 992px) {
+    .sidebar {
+        margin-left: calc(-1 * var(--sidebar-width));
+    }
+    .main-content {
+        margin-left: 0;
+    }
+    /* Thêm logic JS để toggle sidebar trên mobile nếu Hao muốn */
+    .sidebar.show {
+        margin-left: 0;
+    }
+}
